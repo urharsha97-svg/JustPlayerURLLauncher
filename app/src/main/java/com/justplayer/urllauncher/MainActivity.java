@@ -3,6 +3,7 @@ package com.justplayer.urllauncher;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,7 +18,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -36,9 +36,9 @@ public class MainActivity extends Activity {
     private LinearLayout historyLayout;
     private LinearLayout favouritesLayout;
 
-    private android.content.SharedPreferences prefs;
+    private SharedPreferences prefs;
 
-    private static final String PREFS = "player_data_v3";
+    private static final String PREFS = "player_data_v4";
     private static final String HISTORY = "history";
     private static final String FAVOURITES = "favourites";
 
@@ -57,6 +57,10 @@ public class MainActivity extends Activity {
     private final Handler mainHandler =
             new Handler(Looper.getMainLooper());
 
+    // =====================================================
+    // BASIC HELPERS
+    // =====================================================
+
     private int dp(int value) {
         return (int) (
                 value *
@@ -67,11 +71,85 @@ public class MainActivity extends Activity {
         );
     }
 
+    private LinearLayout.LayoutParams fullParams() {
+        return new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+    }
+
+    /*
+     * IMPORTANT:
+     * This was missing in the previous version.
+     * It is used by the buttons inside History/Favourites.
+     */
+    private LinearLayout.LayoutParams buttonWeightParams() {
+
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        0,
+                        dp(58),
+                        1.0f
+                );
+
+        params.setMargins(
+                dp(3),
+                0,
+                dp(3),
+                0
+        );
+
+        return params;
+    }
+
+    private Button makeButton(String text) {
+
+        Button button = new Button(this);
+
+        button.setText(text);
+        button.setTextSize(17);
+        button.setAllCaps(false);
+        button.setGravity(Gravity.CENTER);
+        button.setFocusable(true);
+        button.setFocusableInTouchMode(true);
+
+        button.setPadding(
+                dp(8),
+                dp(5),
+                dp(8),
+                dp(5)
+        );
+
+        return button;
+    }
+
+    private TextView sectionTitle(String text) {
+
+        TextView title = new TextView(this);
+
+        title.setText(text);
+        title.setTextSize(25);
+        title.setGravity(Gravity.CENTER);
+        title.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
+
+        return title;
+    }
+
+    // =====================================================
+    // ACTIVITY
+    // =====================================================
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        requestWindowFeature(
+                Window.FEATURE_NO_TITLE
+        );
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -123,7 +201,10 @@ public class MainActivity extends Activity {
         TextView title =
                 new TextView(this);
 
-        title.setText("VIDEO URL LAUNCHER");
+        title.setText(
+                "VIDEO URL LAUNCHER"
+        );
+
         title.setTextSize(36);
         title.setGravity(Gravity.CENTER);
         title.setTypeface(
@@ -146,16 +227,18 @@ public class MainActivity extends Activity {
         subtitle.setTextSize(19);
         subtitle.setGravity(Gravity.CENTER);
 
-        LinearLayout.LayoutParams subParams =
+        LinearLayout.LayoutParams subtitleParams =
                 fullParams();
 
-        subParams.bottomMargin =
+        subtitleParams.bottomMargin =
                 dp(25);
 
         root.addView(
                 subtitle,
-                subParams
+                subtitleParams
         );
+
+        // URL INPUT
 
         urlInput =
                 new EditText(this);
@@ -182,6 +265,8 @@ public class MainActivity extends Activity {
                 )
         );
 
+        // JUST PLAYER
+
         Button justPlayer =
                 makeButton(
                         "▶  PLAY IN JUST PLAYER"
@@ -204,6 +289,8 @@ public class MainActivity extends Activity {
         justPlayer.setOnClickListener(
                 v -> playCurrentInJustPlayer()
         );
+
+        // CHOOSE PLAYER
 
         Button choosePlayer =
                 makeButton(
@@ -228,28 +315,32 @@ public class MainActivity extends Activity {
                 v -> choosePlayerForCurrentUrl()
         );
 
+        // ADD FAVOURITE
+
         Button addFavourite =
                 makeButton(
                         "☆  ADD CURRENT URL TO FAVOURITES"
                 );
 
-        LinearLayout.LayoutParams addFavParams =
+        LinearLayout.LayoutParams favouriteParams =
                 fullParams();
 
-        addFavParams.height =
+        favouriteParams.height =
                 dp(62);
 
-        addFavParams.topMargin =
+        favouriteParams.topMargin =
                 dp(10);
 
         root.addView(
                 addFavourite,
-                addFavParams
+                favouriteParams
         );
 
         addFavourite.setOnClickListener(
                 v -> addCurrentToFavourites()
         );
+
+        // FAVOURITES
 
         TextView favTitle =
                 sectionTitle(
@@ -304,6 +395,8 @@ public class MainActivity extends Activity {
         clearFav.setOnClickListener(
                 v -> clearFavourites()
         );
+
+        // HISTORY
 
         TextView historyTitle =
                 sectionTitle(
@@ -364,61 +457,6 @@ public class MainActivity extends Activity {
         urlInput.requestFocus();
     }
 
-    private LinearLayout.LayoutParams fullParams() {
-
-        return new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-    }
-
-    private TextView sectionTitle(
-            String text
-    ) {
-
-        TextView title =
-                new TextView(this);
-
-        title.setText(text);
-        title.setTextSize(25);
-        title.setGravity(Gravity.CENTER);
-
-        title.setTypeface(
-                null,
-                android.graphics.Typeface.BOLD
-        );
-
-        return title;
-    }
-
-    private Button makeButton(
-            String text
-    ) {
-
-        Button button =
-                new Button(this);
-
-        button.setText(text);
-        button.setTextSize(18);
-        button.setAllCaps(false);
-
-        button.setGravity(
-                Gravity.CENTER
-        );
-
-        button.setFocusable(true);
-        button.setFocusableInTouchMode(true);
-
-        button.setPadding(
-                dp(12),
-                dp(8),
-                dp(12),
-                dp(8)
-        );
-
-        return button;
-    }
-
     // =====================================================
     // CURRENT URL
     // =====================================================
@@ -436,19 +474,16 @@ public class MainActivity extends Activity {
         String url = getCurrentUrl();
 
         if (url.isEmpty()) {
+
             showMessage(
                     "Please enter a video URL"
             );
+
             return;
         }
 
         addHistory(url);
 
-        /*
-         * Resolve a fresh URL first.
-         * If resolving fails because of network,
-         * we still try the original URL.
-         */
         resolveAndPlay(
                 url,
                 true
@@ -460,17 +495,17 @@ public class MainActivity extends Activity {
         String url = getCurrentUrl();
 
         if (url.isEmpty()) {
+
             showMessage(
                     "Please enter a video URL"
             );
+
             return;
         }
 
         addHistory(url);
 
-        resolveAndChoose(
-                url
-        );
+        resolveAndChoose(url);
     }
 
     private void addCurrentToFavourites() {
@@ -478,9 +513,11 @@ public class MainActivity extends Activity {
         String url = getCurrentUrl();
 
         if (url.isEmpty()) {
+
             showMessage(
                     "Enter a URL first"
             );
+
             return;
         }
 
@@ -488,7 +525,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // FRESH RESOLUTION
+    // FRESH URL CHECK / RESOLVE
     // =====================================================
 
     private void resolveAndPlay(
@@ -556,9 +593,8 @@ public class MainActivity extends Activity {
                     if (fallbackToSource) {
 
                         /*
-                         * Network/server check failed.
-                         * We don't label it expired.
-                         * Try the original source.
+                         * Don't falsely mark a network/
+                         * server problem as EXPIRED.
                          */
                         openInJustPlayer(
                                 sourceUrl
@@ -638,19 +674,12 @@ public class MainActivity extends Activity {
         });
     }
 
-    /*
-     * Attempts to resolve redirects and checks whether
-     * the source is reachable.
-     *
-     * IMPORTANT:
-     * We only save sourceUrl in history.
-     * Temporary redirected URLs are NEVER saved.
-     */
     private ResolveResult resolveUrl(
             String sourceUrl
     ) {
 
-        HttpURLConnection connection = null;
+        HttpURLConnection connection =
+                null;
 
         try {
 
@@ -678,10 +707,6 @@ public class MainActivity extends Activity {
                     "Mozilla/5.0"
             );
 
-            /*
-             * Request only a tiny part of the file.
-             * This helps video hosts that don't like HEAD.
-             */
             connection.setRequestProperty(
                     "Range",
                     "bytes=0-0"
@@ -699,17 +724,10 @@ public class MainActivity extends Activity {
                             .getURL()
                             .toString();
 
-            /*
-             * 2xx = reachable.
-             *
-             * 3xx normally gets followed automatically.
-             */
             if (code >= 200
                     && code < 300) {
 
-                closeConnection(
-                        connection
-                );
+                connection.disconnect();
 
                 return new ResolveResult(
                         STATUS_WORKING,
@@ -717,16 +735,10 @@ public class MainActivity extends Activity {
                 );
             }
 
-            /*
-             * 404 / 410 are strong indicators that
-             * the resource is gone/expired.
-             */
             if (code == 404
                     || code == 410) {
 
-                closeConnection(
-                        connection
-                );
+                connection.disconnect();
 
                 return new ResolveResult(
                         STATUS_EXPIRED,
@@ -734,15 +746,7 @@ public class MainActivity extends Activity {
                 );
             }
 
-            /*
-             * 401/403 can also happen because of
-             * anti-hotlink/authentication.
-             * We deliberately call these CHECK FAILED
-             * rather than falsely calling them expired.
-             */
-            closeConnection(
-                    connection
-            );
+            connection.disconnect();
 
             return new ResolveResult(
                     STATUS_FAILED,
@@ -753,9 +757,7 @@ public class MainActivity extends Activity {
 
             if (connection != null) {
 
-                closeConnection(
-                        connection
-                );
+                connection.disconnect();
             }
 
             return new ResolveResult(
@@ -763,25 +765,6 @@ public class MainActivity extends Activity {
                     sourceUrl
             );
         }
-    }
-
-    private void closeConnection(
-            HttpURLConnection connection
-    ) {
-
-        try {
-
-            InputStream stream =
-                    connection.getInputStream();
-
-            if (stream != null) {
-                stream.close();
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        connection.disconnect();
     }
 
     // =====================================================
@@ -808,9 +791,6 @@ public class MainActivity extends Activity {
                     JUST_PLAYER_PACKAGE
             );
 
-            /*
-             * Fresh external activity request.
-             */
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK
             );
@@ -1020,7 +1000,8 @@ public class MainActivity extends Activity {
             return;
         }
 
-        for (VideoItem item : favourites) {
+        for (VideoItem item :
+                favourites) {
 
             addVideoRow(
                     favouritesLayout,
@@ -1070,7 +1051,7 @@ public class MainActivity extends Activity {
                 fullParams()
         );
 
-        // DATE / TIME + STATUS
+        // STATUS + DATE
 
         TextView dateStatus =
                 new TextView(this);
@@ -1100,7 +1081,6 @@ public class MainActivity extends Activity {
         );
 
         urlText.setTextSize(13);
-
         urlText.setMaxLines(1);
 
         container.addView(
@@ -1108,7 +1088,7 @@ public class MainActivity extends Activity {
                 fullParams()
         );
 
-        // BUTTON ROW
+        // BUTTONS
 
         LinearLayout buttons =
                 new LinearLayout(this);
@@ -1121,7 +1101,7 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        // JUST PLAYER
+        // PLAY
 
         Button play =
                 makeButton(
@@ -1151,7 +1131,7 @@ public class MainActivity extends Activity {
                 }
         );
 
-        // CHOOSE PLAYER
+        // CHOOSE
 
         Button choose =
                 makeButton(
@@ -1213,6 +1193,13 @@ public class MainActivity extends Activity {
                         dp(58)
                 );
 
+        smallParams.setMargins(
+                dp(3),
+                0,
+                dp(3),
+                0
+        );
+
         buttons.addView(
                 favourite,
                 smallParams
@@ -1271,20 +1258,8 @@ public class MainActivity extends Activity {
                 fullParams()
         );
 
-        LinearLayout.LayoutParams containerParams =
-                fullParams();
+        // TV REMOTE NAVIGATION
 
-        containerParams.bottomMargin =
-                dp(18);
-
-        parent.addView(
-                container,
-                containerParams
-        );
-
-        /*
-         * TV remote left/right navigation.
-         */
         play.setNextFocusRightId(
                 choose.getId()
         );
@@ -1316,7 +1291,22 @@ public class MainActivity extends Activity {
         delete.setNextFocusLeftId(
                 favourite.getId()
         );
+
+        LinearLayout.LayoutParams containerParams =
+                fullParams();
+
+        containerParams.bottomMargin =
+                dp(18);
+
+        parent.addView(
+                container,
+                containerParams
+        );
     }
+
+    // =====================================================
+    // STATUS
+    // =====================================================
 
     private String getStatusText(
             VideoItem item
@@ -1340,10 +1330,6 @@ public class MainActivity extends Activity {
                 return "⚪ NOT CHECKED";
         }
     }
-
-    // =====================================================
-    // CHECK ONLY
-    // =====================================================
 
     private void checkOnly(
             String url
@@ -1398,10 +1384,6 @@ public class MainActivity extends Activity {
         });
     }
 
-    // =====================================================
-    // STATUS STORAGE
-    // =====================================================
-
     private void setStatusForUrl(
             String url,
             int status
@@ -1410,7 +1392,8 @@ public class MainActivity extends Activity {
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        for (VideoItem item : history) {
+        for (VideoItem item :
+                history) {
 
             if (item.url.equals(url)) {
 
@@ -1427,7 +1410,8 @@ public class MainActivity extends Activity {
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        for (VideoItem item : favourites) {
+        for (VideoItem item :
+                favourites) {
 
             if (item.url.equals(url)) {
 
@@ -1454,7 +1438,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // DELETE / CLEAR
+    // DELETE
     // =====================================================
 
     private void deleteHistory(
@@ -1509,7 +1493,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // ITEM CREATION
+    // ITEM
     // =====================================================
 
     private VideoItem createItem(
@@ -1623,7 +1607,8 @@ public class MainActivity extends Activity {
         StringBuilder data =
                 new StringBuilder();
 
-        for (VideoItem item : items) {
+        for (VideoItem item :
+                items) {
 
             if (data.length() > 0) {
 
@@ -1679,7 +1664,8 @@ public class MainActivity extends Activity {
         String[] records =
                 data.split("\n");
 
-        for (String encoded : records) {
+        for (String encoded :
+                records) {
 
             try {
 
@@ -1733,7 +1719,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // HELPERS
+    // LIST HELPERS
     // =====================================================
 
     private boolean containsUrl(
@@ -1741,7 +1727,8 @@ public class MainActivity extends Activity {
             String url
     ) {
 
-        for (VideoItem item : items) {
+        for (VideoItem item :
+                items) {
 
             if (item.url.equals(url)) {
 
@@ -1757,7 +1744,8 @@ public class MainActivity extends Activity {
             String url
     ) {
 
-        for (int i = items.size() - 1;
+        for (int i =
+                items.size() - 1;
              i >= 0;
              i--) {
 
@@ -1808,25 +1796,20 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // DATA
+    // DATA CLASSES
     // =====================================================
 
     private static class VideoItem {
 
         String url;
-
         String fileName;
-
         long timestamp;
-
-        int status =
-                STATUS_UNKNOWN;
+        int status = STATUS_UNKNOWN;
     }
 
     private static class ResolveResult {
 
         int status;
-
         String finalUrl;
 
         ResolveResult(
