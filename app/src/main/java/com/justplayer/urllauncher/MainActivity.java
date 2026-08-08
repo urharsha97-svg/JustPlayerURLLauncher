@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -51,43 +52,18 @@ public class MainActivity extends Activity {
     private static final String JUST_PLAYER_PACKAGE =
             "com.brouken.player";
 
-    // =====================================================
-    // PREMIUM BLACK THEME
-    // =====================================================
+    private static final int BLACK = Color.rgb(0, 0, 0);
+    private static final int CARD = Color.rgb(17, 17, 17);
+    private static final int CARD_2 = Color.rgb(25, 25, 25);
+    private static final int CARD_3 = Color.rgb(30, 30, 30);
 
-    private static final int BLACK =
-            Color.rgb(0, 0, 0);
+    private static final int FOCUS = Color.rgb(35, 75, 125);
+    private static final int FOCUS_BORDER = Color.rgb(80, 160, 255);
 
-    private static final int CARD =
-            Color.rgb(17, 17, 17);
-
-    private static final int CARD_2 =
-            Color.rgb(25, 25, 25);
-
-    private static final int CARD_3 =
-            Color.rgb(30, 30, 30);
-
-    private static final int FOCUS =
-            Color.rgb(35, 75, 125);
-
-    private static final int FOCUS_BORDER =
-            Color.rgb(80, 160, 255);
-
-    private static final int WHITE =
-            Color.rgb(245, 245, 245);
-
-    private static final int GREY =
-            Color.rgb(165, 165, 165);
-
-    private static final int BLUE =
-            Color.rgb(80, 160, 255);
-
-    private static final int GOLD =
-            Color.rgb(255, 193, 7);
-
-    // =====================================================
-    // SORT MODES
-    // =====================================================
+    private static final int WHITE = Color.rgb(245, 245, 245);
+    private static final int GREY = Color.rgb(165, 165, 165);
+    private static final int BLUE = Color.rgb(80, 160, 255);
+    private static final int GOLD = Color.rgb(255, 193, 7);
 
     private static final int SORT_NEWEST = 0;
     private static final int SORT_OLDEST = 1;
@@ -97,18 +73,12 @@ public class MainActivity extends Activity {
     private int historySort = SORT_NEWEST;
     private int favouritesSort = SORT_NEWEST;
 
-    // =====================================================
-    // ACTIVITY
-    // =====================================================
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(
-                Window.FEATURE_NO_TITLE
-        );
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -129,10 +99,6 @@ public class MainActivity extends Activity {
         refreshFavourites();
     }
 
-    // =====================================================
-    // BASIC HELPERS
-    // =====================================================
-
     private int dp(int value) {
 
         return (int) (
@@ -151,10 +117,6 @@ public class MainActivity extends Activity {
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
     }
-
-    // =====================================================
-    // PREMIUM BUTTON BACKGROUND
-    // =====================================================
 
     private StateListDrawable createButtonBackground() {
 
@@ -186,10 +148,7 @@ public class MainActivity extends Activity {
         );
 
         pressed.setCornerRadius(dp(10));
-        pressed.setStroke(
-                dp(3),
-                Color.WHITE
-        );
+        pressed.setStroke(dp(3), Color.WHITE);
 
         StateListDrawable states =
                 new StateListDrawable();
@@ -236,7 +195,6 @@ public class MainActivity extends Activity {
         );
 
         focused.setCornerRadius(dp(10));
-
         focused.setStroke(
                 dp(3),
                 FOCUS_BORDER
@@ -273,7 +231,6 @@ public class MainActivity extends Activity {
         button.setTextSize(17);
         button.setAllCaps(false);
         button.setGravity(Gravity.CENTER);
-
         button.setTextColor(WHITE);
 
         button.setFocusable(true);
@@ -327,9 +284,7 @@ public class MainActivity extends Activity {
         return view;
     }
 
-    private TextView sectionTitle(
-            String text
-    ) {
+    private TextView sectionTitle(String text) {
 
         TextView title =
                 new TextView(this);
@@ -338,9 +293,7 @@ public class MainActivity extends Activity {
         title.setTextSize(25);
         title.setTextColor(WHITE);
 
-        title.setGravity(
-                Gravity.CENTER
-        );
+        title.setGravity(Gravity.CENTER);
 
         title.setTypeface(
                 null,
@@ -349,10 +302,6 @@ public class MainActivity extends Activity {
 
         return title;
     }
-
-    // =====================================================
-    // PREMIUM DIVIDER
-    // =====================================================
 
     private View createPremiumDivider() {
 
@@ -366,13 +315,9 @@ public class MainActivity extends Activity {
                 Color.rgb(55, 100, 155)
         );
 
-        background.setCornerRadius(
-                dp(4)
-        );
+        background.setCornerRadius(dp(4));
 
-        divider.setBackground(
-                background
-        );
+        divider.setBackground(background);
 
         LinearLayout.LayoutParams params =
                 new LinearLayout.LayoutParams(
@@ -383,11 +328,8 @@ public class MainActivity extends Activity {
         params.gravity =
                 Gravity.CENTER_HORIZONTAL;
 
-        params.topMargin =
-                dp(10);
-
-        params.bottomMargin =
-                dp(18);
+        params.topMargin = dp(10);
+        params.bottomMargin = dp(18);
 
         divider.setLayoutParams(params);
 
@@ -419,7 +361,7 @@ public class MainActivity extends Activity {
 
         root.setPadding(
                 dp(55),
-                dp(30),
+                dp(25),
                 dp(55),
                 dp(50)
         );
@@ -429,15 +371,60 @@ public class MainActivity extends Activity {
         scrollView.addView(root);
 
         // =================================================
+        // PREMIUM CINEMATIC IMAGE HEADER
+        // =================================================
+
+        ImageView premiumHeaderImage =
+                new ImageView(this);
+
+        premiumHeaderImage.setImageResource(
+                getResources().getIdentifier(
+                        "IMG_20260809_025727",
+                        "drawable",
+                        getPackageName()
+                )
+        );
+
+        premiumHeaderImage.setScaleType(
+                ImageView.ScaleType.CENTER_CROP
+        );
+
+        premiumHeaderImage.setAdjustViewBounds(true);
+
+        GradientDrawable imageBackground =
+                new GradientDrawable();
+
+        imageBackground.setColor(BLACK);
+        imageBackground.setCornerRadius(dp(18));
+
+        premiumHeaderImage.setBackground(
+                imageBackground
+        );
+
+        premiumHeaderImage.setClipToOutline(true);
+
+        LinearLayout.LayoutParams imageParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(190)
+                );
+
+        imageParams.bottomMargin =
+                dp(22);
+
+        root.addView(
+                premiumHeaderImage,
+                imageParams
+        );
+
+        // =================================================
         // PREMIUM HEADER
         // =================================================
 
         TextView brand =
                 new TextView(this);
 
-        brand.setText(
-                "JUST PLAYER"
-        );
+        brand.setText("JUST PLAYER");
 
         brand.setTextSize(15);
         brand.setTextColor(BLUE);
@@ -463,9 +450,7 @@ public class MainActivity extends Activity {
         title.setTextSize(36);
         title.setTextColor(WHITE);
 
-        title.setGravity(
-                Gravity.CENTER
-        );
+        title.setGravity(Gravity.CENTER);
 
         title.setTypeface(
                 null,
@@ -475,8 +460,7 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams titleParams =
                 fullParams();
 
-        titleParams.topMargin =
-                dp(3);
+        titleParams.topMargin = dp(3);
 
         root.addView(
                 title,
@@ -499,8 +483,7 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams subtitleParams =
                 fullParams();
 
-        subtitleParams.bottomMargin =
-                dp(25);
+        subtitleParams.bottomMargin = dp(25);
 
         root.addView(
                 subtitle,
@@ -557,11 +540,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams justParams =
                 fullParams();
 
-        justParams.height =
-                dp(68);
-
-        justParams.topMargin =
-                dp(15);
+        justParams.height = dp(68);
+        justParams.topMargin = dp(15);
 
         root.addView(
                 justPlayer,
@@ -584,11 +564,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams chooseParams =
                 fullParams();
 
-        chooseParams.height =
-                dp(68);
-
-        chooseParams.topMargin =
-                dp(10);
+        chooseParams.height = dp(68);
+        chooseParams.topMargin = dp(10);
 
         root.addView(
                 choosePlayer,
@@ -611,11 +588,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams favouriteParams =
                 fullParams();
 
-        favouriteParams.height =
-                dp(62);
-
-        favouriteParams.topMargin =
-                dp(10);
+        favouriteParams.height = dp(62);
+        favouriteParams.topMargin = dp(10);
 
         root.addView(
                 addFavourite,
@@ -638,11 +612,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams favTitleParams =
                 fullParams();
 
-        favTitleParams.topMargin =
-                dp(38);
-
-        favTitleParams.bottomMargin =
-                dp(12);
+        favTitleParams.topMargin = dp(38);
+        favTitleParams.bottomMargin = dp(12);
 
         root.addView(
                 favTitle,
@@ -660,15 +631,6 @@ public class MainActivity extends Activity {
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         dp(62)
                 )
-        );
-
-        favouritesSearch.setOnFocusChangeListener(
-                (v, hasFocus) -> {
-
-                    if (!hasFocus) {
-                        refreshFavourites();
-                    }
-                }
         );
 
         favouritesSearch.addTextChangedListener(
@@ -716,15 +678,12 @@ public class MainActivity extends Activity {
                 LinearLayout.VERTICAL
         );
 
-        favouritesLayout.setBackgroundColor(
-                BLACK
-        );
+        favouritesLayout.setBackgroundColor(BLACK);
 
         LinearLayout.LayoutParams favListParams =
                 fullParams();
 
-        favListParams.topMargin =
-                dp(10);
+        favListParams.topMargin = dp(10);
 
         root.addView(
                 favouritesLayout,
@@ -739,11 +698,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams clearFavParams =
                 fullParams();
 
-        clearFavParams.height =
-                dp(58);
-
-        clearFavParams.topMargin =
-                dp(12);
+        clearFavParams.height = dp(58);
+        clearFavParams.topMargin = dp(12);
 
         root.addView(
                 clearFav,
@@ -766,11 +722,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams historyTitleParams =
                 fullParams();
 
-        historyTitleParams.topMargin =
-                dp(42);
-
-        historyTitleParams.bottomMargin =
-                dp(12);
+        historyTitleParams.topMargin = dp(42);
+        historyTitleParams.bottomMargin = dp(12);
 
         root.addView(
                 historyTitle,
@@ -835,15 +788,12 @@ public class MainActivity extends Activity {
                 LinearLayout.VERTICAL
         );
 
-        historyLayout.setBackgroundColor(
-                BLACK
-        );
+        historyLayout.setBackgroundColor(BLACK);
 
         LinearLayout.LayoutParams historyListParams =
                 fullParams();
 
-        historyListParams.topMargin =
-                dp(10);
+        historyListParams.topMargin = dp(10);
 
         root.addView(
                 historyLayout,
@@ -858,11 +808,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams clearHistoryParams =
                 fullParams();
 
-        clearHistoryParams.height =
-                dp(58);
-
-        clearHistoryParams.topMargin =
-                dp(12);
+        clearHistoryParams.height = dp(58);
+        clearHistoryParams.topMargin = dp(12);
 
         root.addView(
                 clearHistory,
@@ -878,27 +825,18 @@ public class MainActivity extends Activity {
         urlInput.requestFocus();
     }
 
-    // =====================================================
-    // SEARCH BOX
-    // =====================================================
-
-    private EditText createSearchBox(
-            String hint
-    ) {
+    private EditText createSearchBox(String hint) {
 
         EditText search =
                 new EditText(this);
 
         search.setHint(hint);
-
         search.setHintTextColor(
                 Color.rgb(115, 115, 115)
         );
 
         search.setTextColor(WHITE);
-
         search.setSingleLine(true);
-
         search.setTextSize(18);
 
         search.setPadding(
@@ -915,10 +853,6 @@ public class MainActivity extends Activity {
         return search;
     }
 
-    // =====================================================
-    // SORT BAR
-    // =====================================================
-
     private LinearLayout createSortBar(
             boolean favourites
     ) {
@@ -934,150 +868,69 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        Button newest =
-                makeButton("NEWEST");
+        Button newest = makeButton("NEWEST");
+        Button oldest = makeButton("OLDEST");
+        Button az = makeButton("A-Z");
+        Button za = makeButton("Z-A");
 
-        Button oldest =
-                makeButton("OLDEST");
+        bar.addView(newest, buttonWeightParams());
+        bar.addView(oldest, buttonWeightParams());
+        bar.addView(az, buttonWeightParams());
+        bar.addView(za, buttonWeightParams());
 
-        Button az =
-                makeButton("A-Z");
+        newest.setOnClickListener(v -> {
 
-        Button za =
-                makeButton("Z-A");
+            if (favourites) {
+                favouritesSort = SORT_NEWEST;
+                refreshFavourites();
+            } else {
+                historySort = SORT_NEWEST;
+                refreshHistory();
+            }
+        });
 
-        bar.addView(
-                newest,
-                buttonWeightParams()
-        );
+        oldest.setOnClickListener(v -> {
 
-        bar.addView(
-                oldest,
-                buttonWeightParams()
-        );
+            if (favourites) {
+                favouritesSort = SORT_OLDEST;
+                refreshFavourites();
+            } else {
+                historySort = SORT_OLDEST;
+                refreshHistory();
+            }
+        });
 
-        bar.addView(
-                az,
-                buttonWeightParams()
-        );
+        az.setOnClickListener(v -> {
 
-        bar.addView(
-                za,
-                buttonWeightParams()
-        );
+            if (favourites) {
+                favouritesSort = SORT_AZ;
+                refreshFavourites();
+            } else {
+                historySort = SORT_AZ;
+                refreshHistory();
+            }
+        });
 
-        newest.setOnClickListener(
-                v -> {
+        za.setOnClickListener(v -> {
 
-                    if (favourites) {
+            if (favourites) {
+                favouritesSort = SORT_ZA;
+                refreshFavourites();
+            } else {
+                historySort = SORT_ZA;
+                refreshHistory();
+            }
+        });
 
-                        favouritesSort =
-                                SORT_NEWEST;
-
-                        refreshFavourites();
-
-                    } else {
-
-                        historySort =
-                                SORT_NEWEST;
-
-                        refreshHistory();
-                    }
-                }
-        );
-
-        oldest.setOnClickListener(
-                v -> {
-
-                    if (favourites) {
-
-                        favouritesSort =
-                                SORT_OLDEST;
-
-                        refreshFavourites();
-
-                    } else {
-
-                        historySort =
-                                SORT_OLDEST;
-
-                        refreshHistory();
-                    }
-                }
-        );
-
-        az.setOnClickListener(
-                v -> {
-
-                    if (favourites) {
-
-                        favouritesSort =
-                                SORT_AZ;
-
-                        refreshFavourites();
-
-                    } else {
-
-                        historySort =
-                                SORT_AZ;
-
-                        refreshHistory();
-                    }
-                }
-        );
-
-        za.setOnClickListener(
-                v -> {
-
-                    if (favourites) {
-
-                        favouritesSort =
-                                SORT_ZA;
-
-                        refreshFavourites();
-
-                    } else {
-
-                        historySort =
-                                SORT_ZA;
-
-                        refreshHistory();
-                    }
-                }
-        );
-
-        // TV remote navigation
-
-        newest.setNextFocusRightId(
-                oldest.getId()
-        );
-
-        oldest.setNextFocusLeftId(
-                newest.getId()
-        );
-
-        oldest.setNextFocusRightId(
-                az.getId()
-        );
-
-        az.setNextFocusLeftId(
-                oldest.getId()
-        );
-
-        az.setNextFocusRightId(
-                za.getId()
-        );
-
-        za.setNextFocusLeftId(
-                az.getId()
-        );
+        newest.setNextFocusRightId(oldest.getId());
+        oldest.setNextFocusLeftId(newest.getId());
+        oldest.setNextFocusRightId(az.getId());
+        az.setNextFocusLeftId(oldest.getId());
+        az.setNextFocusRightId(za.getId());
+        za.setNextFocusLeftId(az.getId());
 
         return bar;
     }
-
-    // =====================================================
-    // CURRENT URL
-    // =====================================================
 
     private String getCurrentUrl() {
 
@@ -1089,73 +942,48 @@ public class MainActivity extends Activity {
 
     private void playCurrentInJustPlayer() {
 
-        String url =
-                getCurrentUrl();
+        String url = getCurrentUrl();
 
         if (url.isEmpty()) {
-
-            showMessage(
-                    "Please enter a video URL"
-            );
-
+            showMessage("Please enter a video URL");
             return;
         }
 
         addHistory(url);
-
         openInJustPlayerFresh(url);
     }
 
     private void choosePlayerForCurrentUrl() {
 
-        String url =
-                getCurrentUrl();
+        String url = getCurrentUrl();
 
         if (url.isEmpty()) {
-
-            showMessage(
-                    "Please enter a video URL"
-            );
-
+            showMessage("Please enter a video URL");
             return;
         }
 
         addHistory(url);
-
         openPlayerChooserFresh(url);
     }
 
     private void addCurrentToFavourites() {
 
-        String url =
-                getCurrentUrl();
+        String url = getCurrentUrl();
 
         if (url.isEmpty()) {
-
-            showMessage(
-                    "Enter a URL first"
-            );
-
+            showMessage("Enter a URL first");
             return;
         }
 
         addFavourite(url);
     }
 
-    // =====================================================
-    // PLAY JUST PLAYER
-    // =====================================================
-
-    private void openInJustPlayerFresh(
-            String url
-    ) {
+    private void openInJustPlayerFresh(String url) {
 
         try {
 
             Intent intent =
-                    new Intent(
-                            Intent.ACTION_VIEW
-                    );
+                    new Intent(Intent.ACTION_VIEW);
 
             intent.setDataAndType(
                     Uri.parse(url),
@@ -1185,9 +1013,7 @@ public class MainActivity extends Activity {
             try {
 
                 Intent fallback =
-                        new Intent(
-                                Intent.ACTION_VIEW
-                        );
+                        new Intent(Intent.ACTION_VIEW);
 
                 fallback.setDataAndType(
                         Uri.parse(url),
@@ -1213,20 +1039,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =====================================================
-    // CHOOSE ANY PLAYER
-    // =====================================================
-
-    private void openPlayerChooserFresh(
-            String url
-    ) {
+    private void openPlayerChooserFresh(String url) {
 
         try {
 
             Intent videoIntent =
-                    new Intent(
-                            Intent.ACTION_VIEW
-                    );
+                    new Intent(Intent.ACTION_VIEW);
 
             videoIntent.setDataAndType(
                     Uri.parse(url),
@@ -1257,37 +1075,21 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =====================================================
-    // HISTORY
-    // =====================================================
-
-    private void addHistory(
-            String url
-    ) {
+    private void addHistory(String url) {
 
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        removeUrl(
-                history,
-                url
-        );
+        removeUrl(history, url);
 
-        VideoItem item =
-                createItem(url);
+        VideoItem item = createItem(url);
 
         item.timestamp =
                 System.currentTimeMillis();
 
-        history.add(
-                0,
-                item
-        );
+        history.add(0, item);
 
-        saveItems(
-                HISTORY,
-                history
-        );
+        saveItems(HISTORY, history);
 
         refreshHistory();
     }
@@ -1317,15 +1119,9 @@ public class MainActivity extends Activity {
         }
 
         List<VideoItem> filtered =
-                filterItems(
-                        history,
-                        query
-                );
+                filterItems(history, query);
 
-        sortItems(
-                filtered,
-                historySort
-        );
+        sortItems(filtered, historySort);
 
         if (filtered.isEmpty()) {
 
@@ -1339,8 +1135,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        for (VideoItem item :
-                filtered) {
+        for (VideoItem item : filtered) {
 
             addVideoRow(
                     historyLayout,
@@ -1350,21 +1145,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =====================================================
-    // FAVOURITES
-    // =====================================================
-
-    private void addFavourite(
-            String url
-    ) {
+    private void addFavourite(String url) {
 
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        if (containsUrl(
-                favourites,
-                url
-        )) {
+        if (containsUrl(favourites, url)) {
 
             showMessage(
                     "Already in favourites"
@@ -1373,16 +1159,12 @@ public class MainActivity extends Activity {
             return;
         }
 
-        VideoItem item =
-                createItem(url);
+        VideoItem item = createItem(url);
 
         item.timestamp =
                 System.currentTimeMillis();
 
-        favourites.add(
-                0,
-                item
-        );
+        favourites.add(0, item);
 
         saveItems(
                 FAVOURITES,
@@ -1396,17 +1178,12 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void removeFavourite(
-            String url
-    ) {
+    private void removeFavourite(String url) {
 
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        removeUrl(
-                favourites,
-                url
-        );
+        removeUrl(favourites, url);
 
         saveItems(
                 FAVOURITES,
@@ -1467,8 +1244,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        for (VideoItem item :
-                filtered) {
+        for (VideoItem item : filtered) {
 
             addVideoRow(
                     favouritesLayout,
@@ -1477,10 +1253,6 @@ public class MainActivity extends Activity {
             );
         }
     }
-
-    // =====================================================
-    // FILTER
-    // =====================================================
 
     private List<VideoItem> filterItems(
             List<VideoItem> source,
@@ -1493,12 +1265,10 @@ public class MainActivity extends Activity {
         if (query.isEmpty()) {
 
             result.addAll(source);
-
             return result;
         }
 
-        for (VideoItem item :
-                source) {
+        for (VideoItem item : source) {
 
             String name =
                     item.fileName
@@ -1522,10 +1292,6 @@ public class MainActivity extends Activity {
         return result;
     }
 
-    // =====================================================
-    // SORT
-    // =====================================================
-
     private void sortItems(
             List<VideoItem> items,
             int sortMode
@@ -1542,10 +1308,7 @@ public class MainActivity extends Activity {
                             )
             );
 
-        } else if (
-                sortMode ==
-                        SORT_OLDEST
-        ) {
+        } else if (sortMode == SORT_OLDEST) {
 
             Collections.sort(
                     items,
@@ -1556,10 +1319,7 @@ public class MainActivity extends Activity {
                             )
             );
 
-        } else if (
-                sortMode ==
-                        SORT_AZ
-        ) {
+        } else if (sortMode == SORT_AZ) {
 
             Collections.sort(
                     items,
@@ -1613,10 +1373,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // =====================================================
-    // VIDEO ROW
-    // =====================================================
-
     private void addVideoRow(
             LinearLayout parent,
             VideoItem item,
@@ -1650,10 +1406,6 @@ public class MainActivity extends Activity {
 
         container.setBackground(card);
 
-        // =================================================
-        // FILE NAME / CUSTOM NAME
-        // =================================================
-
         TextView filename =
                 makeText(
                         "🎬  " + item.fileName,
@@ -1676,10 +1428,6 @@ public class MainActivity extends Activity {
                 fullParams()
         );
 
-        // =================================================
-        // DATE / TIME
-        // =================================================
-
         TextView date =
                 makeText(
                         "🕘  " +
@@ -1694,17 +1442,12 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams dateParams =
                 fullParams();
 
-        dateParams.topMargin =
-                dp(5);
+        dateParams.topMargin = dp(5);
 
         container.addView(
                 date,
                 dateParams
         );
-
-        // =================================================
-        // URL
-        // =================================================
 
         TextView urlText =
                 makeText(
@@ -1729,20 +1472,13 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams urlParams =
                 fullParams();
 
-        urlParams.topMargin =
-                dp(5);
-
-        urlParams.bottomMargin =
-                dp(8);
+        urlParams.topMargin = dp(5);
+        urlParams.bottomMargin = dp(8);
 
         container.addView(
                 urlText,
                 urlParams
         );
-
-        // =================================================
-        // BUTTON ROW
-        // =================================================
 
         LinearLayout buttons =
                 new LinearLayout(this);
@@ -1755,45 +1491,25 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        // =================================================
-        // PLAYER
-        // =================================================
-
         Button choose =
-                makeButton(
-                        "🎬 PLAYER"
-                );
+                makeButton("🎬 PLAYER");
 
         buttons.addView(
                 choose,
                 buttonWeightParams()
         );
 
-        choose.setOnClickListener(
-                v -> {
+        choose.setOnClickListener(v -> {
 
-                    urlInput.setText(
-                            item.url
-                    );
+            urlInput.setText(item.url);
 
-                    addHistory(
-                            item.url
-                    );
+            addHistory(item.url);
 
-                    openPlayerChooserFresh(
-                            item.url
-                    );
-                }
-        );
-
-        // =================================================
-        // RENAME
-        // =================================================
+            openPlayerChooserFresh(item.url);
+        });
 
         Button rename =
-                makeButton(
-                        "✏ RENAME"
-                );
+                makeButton("✏ RENAME");
 
         buttons.addView(
                 rename,
@@ -1806,10 +1522,6 @@ public class MainActivity extends Activity {
                         favouriteSection
                 )
         );
-
-        // =================================================
-        // FAVOURITE
-        // =================================================
 
         Button favourite =
                 makeButton(
@@ -1836,64 +1548,46 @@ public class MainActivity extends Activity {
                 smallParams
         );
 
-        favourite.setOnClickListener(
-                v -> {
+        favourite.setOnClickListener(v -> {
 
-                    if (favouriteSection) {
+            if (favouriteSection) {
 
-                        removeFavourite(
-                                item.url
-                        );
+                removeFavourite(item.url);
 
-                    } else {
+            } else {
 
-                        addFavourite(
-                                item.url
-                        );
-                    }
-                }
-        );
-
-        // =================================================
-        // DELETE
-        // =================================================
+                addFavourite(item.url);
+            }
+        });
 
         Button delete =
-                makeButton(
-                        "🗑"
-                );
+                makeButton("🗑");
 
         buttons.addView(
                 delete,
                 smallParams
         );
 
-        delete.setOnClickListener(
-                v -> {
+        delete.setOnClickListener(v -> {
 
-                    if (favouriteSection) {
+            if (favouriteSection) {
 
-                        confirmDeleteFavourite(
-                                item.url
-                        );
+                confirmDeleteFavourite(
+                        item.url
+                );
 
-                    } else {
+            } else {
 
-                        confirmDeleteHistory(
-                                item.url
-                        );
-                    }
-                }
-        );
+                confirmDeleteHistory(
+                        item.url
+                );
+            }
+        });
 
         container.addView(
                 buttons,
                 fullParams()
         );
-
-        // =================================================
-        // TV REMOTE NAVIGATION
-        // =================================================
 
         choose.setNextFocusRightId(
                 rename.getId()
@@ -1922,18 +1616,13 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams containerParams =
                 fullParams();
 
-        containerParams.bottomMargin =
-                dp(14);
+        containerParams.bottomMargin = dp(14);
 
         parent.addView(
                 container,
                 containerParams
         );
     }
-
-    // =====================================================
-    // RENAME
-    // =====================================================
 
     private void showRenameDialog(
             VideoItem item,
@@ -1947,7 +1636,6 @@ public class MainActivity extends Activity {
         input.setText(item.fileName);
         input.setTextColor(WHITE);
         input.setTextSize(18);
-
         input.setSelectAllOnFocus(true);
 
         input.setPadding(
@@ -1981,9 +1669,7 @@ public class MainActivity extends Activity {
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle(
-                                "Rename Video"
-                        )
+                        .setTitle("Rename Video")
                         .setMessage(
                                 "Enter a custom name for this video."
                         )
@@ -1998,66 +1684,59 @@ public class MainActivity extends Activity {
                         )
                         .create();
 
-        dialog.setOnShowListener(
-                d -> {
+        dialog.setOnShowListener(d -> {
 
-                    Button save =
-                            dialog.getButton(
-                                    AlertDialog.BUTTON_POSITIVE
-                            );
+            Button save =
+                    dialog.getButton(
+                            AlertDialog.BUTTON_POSITIVE
+                    );
 
-                    save.setOnClickListener(
-                            v -> {
+            save.setOnClickListener(v -> {
 
-                                String newName =
-                                        input.getText()
-                                                .toString()
-                                                .trim();
+                String newName =
+                        input.getText()
+                                .toString()
+                                .trim();
 
-                                if (newName.isEmpty()) {
+                if (newName.isEmpty()) {
 
-                                    Toast.makeText(
-                                            this,
-                                            "Name cannot be empty",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
+                    Toast.makeText(
+                            this,
+                            "Name cannot be empty",
+                            Toast.LENGTH_SHORT
+                    ).show();
 
-                                    return;
-                                }
+                    return;
+                }
 
-                                renameItem(
-                                        item.url,
-                                        newName
+                renameItem(
+                        item.url,
+                        newName
+                );
+
+                dialog.dismiss();
+            });
+
+            input.requestFocus();
+
+            input.postDelayed(() -> {
+
+                InputMethodManager imm =
+                        (InputMethodManager)
+                                getSystemService(
+                                        INPUT_METHOD_SERVICE
                                 );
 
-                                dialog.dismiss();
-                            }
-                    );
+                if (imm != null) {
 
-                    input.requestFocus();
-
-                    input.postDelayed(
-                            () -> {
-
-                                InputMethodManager imm =
-                                        (InputMethodManager)
-                                                getSystemService(
-                                                        INPUT_METHOD_SERVICE
-                                                );
-
-                                if (imm != null) {
-
-                                    imm.showSoftInput(
-                                            input,
-                                            InputMethodManager.SHOW_IMPLICIT
-                                    );
-                                }
-
-                            },
-                            200
+                    imm.showSoftInput(
+                            input,
+                            InputMethodManager.SHOW_IMPLICIT
                     );
                 }
-        );
+
+            }, 200);
+        });
 
         dialog.show();
     }
@@ -2072,14 +1751,11 @@ public class MainActivity extends Activity {
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        for (VideoItem item :
-                history) {
+        for (VideoItem item : history) {
 
             if (item.url.equals(url)) {
 
-                item.fileName =
-                        newName;
-
+                item.fileName = newName;
                 changed = true;
             }
         }
@@ -2095,14 +1771,11 @@ public class MainActivity extends Activity {
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        for (VideoItem item :
-                favourites) {
+        for (VideoItem item : favourites) {
 
             if (item.url.equals(url)) {
 
-                item.fileName =
-                        newName;
-
+                item.fileName = newName;
                 changed = true;
             }
         }
@@ -2123,13 +1796,7 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =====================================================
-    // DELETE CONFIRMATIONS
-    // =====================================================
-
-    private void confirmDeleteHistory(
-            String url
-    ) {
+    private void confirmDeleteHistory(String url) {
 
         new AlertDialog.Builder(this)
                 .setTitle(
@@ -2150,9 +1817,7 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void confirmDeleteFavourite(
-            String url
-    ) {
+    private void confirmDeleteFavourite(String url) {
 
         new AlertDialog.Builder(this)
                 .setTitle(
@@ -2239,21 +1904,12 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    // =====================================================
-    // DELETE
-    // =====================================================
-
-    private void deleteHistory(
-            String url
-    ) {
+    private void deleteHistory(String url) {
 
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        removeUrl(
-                history,
-                url
-        );
+        removeUrl(history, url);
 
         saveItems(
                 HISTORY,
@@ -2293,32 +1949,20 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =====================================================
-    // ITEM
-    // =====================================================
-
-    private VideoItem createItem(
-            String url
-    ) {
+    private VideoItem createItem(String url) {
 
         VideoItem item =
                 new VideoItem();
 
-        item.url =
-                url;
-
-        item.fileName =
-                getFileName(url);
-
+        item.url = url;
+        item.fileName = getFileName(url);
         item.timestamp =
                 System.currentTimeMillis();
 
         return item;
     }
 
-    private String getFileName(
-            String url
-    ) {
+    private String getFileName(String url) {
 
         try {
 
@@ -2368,9 +2012,7 @@ public class MainActivity extends Activity {
         return "Video";
     }
 
-    private String decode(
-            String value
-    ) {
+    private String decode(String value) {
 
         try {
 
@@ -2385,9 +2027,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String formatDate(
-            long timestamp
-    ) {
+    private String formatDate(long timestamp) {
 
         SimpleDateFormat format =
                 new SimpleDateFormat(
@@ -2400,10 +2040,6 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =====================================================
-    // STORAGE
-    // =====================================================
-
     private void saveItems(
             String key,
             List<VideoItem> items
@@ -2412,11 +2048,9 @@ public class MainActivity extends Activity {
         StringBuilder data =
                 new StringBuilder();
 
-        for (VideoItem item :
-                items) {
+        for (VideoItem item : items) {
 
             if (data.length() > 0) {
-
                 data.append("\n");
             }
 
@@ -2447,9 +2081,7 @@ public class MainActivity extends Activity {
                 .apply();
     }
 
-    private List<VideoItem> getItems(
-            String key
-    ) {
+    private List<VideoItem> getItems(String key) {
 
         String data =
                 prefs.getString(
@@ -2461,15 +2093,13 @@ public class MainActivity extends Activity {
                 new ArrayList<>();
 
         if (data.isEmpty()) {
-
             return result;
         }
 
         String[] records =
                 data.split("\n");
 
-        for (String encoded :
-                records) {
+        for (String encoded : records) {
 
             try {
 
@@ -2517,20 +2147,14 @@ public class MainActivity extends Activity {
         return result;
     }
 
-    // =====================================================
-    // LIST HELPERS
-    // =====================================================
-
     private boolean containsUrl(
             List<VideoItem> items,
             String url
     ) {
 
-        for (VideoItem item :
-                items) {
+        for (VideoItem item : items) {
 
             if (item.url.equals(url)) {
-
                 return true;
             }
         }
@@ -2543,8 +2167,7 @@ public class MainActivity extends Activity {
             String url
     ) {
 
-        for (int i =
-                items.size() - 1;
+        for (int i = items.size() - 1;
              i >= 0;
              i--) {
 
@@ -2577,8 +2200,7 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams params =
                 fullParams();
 
-        params.height =
-                dp(70);
+        params.height = dp(70);
 
         parent.addView(
                 empty,
@@ -2586,13 +2208,7 @@ public class MainActivity extends Activity {
         );
     }
 
-    // =====================================================
-    // MESSAGE
-    // =====================================================
-
-    private void showMessage(
-            String message
-    ) {
+    private void showMessage(String message) {
 
         Toast.makeText(
                 this,
@@ -2600,10 +2216,6 @@ public class MainActivity extends Activity {
                 Toast.LENGTH_SHORT
         ).show();
     }
-
-    // =====================================================
-    // DATA CLASS
-    // =====================================================
 
     private static class VideoItem {
 
