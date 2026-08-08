@@ -2,11 +2,15 @@ package com.justplayer.urllauncher;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -24,6 +28,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -31,27 +37,39 @@ import java.util.Locale;
 public class MainActivity extends Activity {
 
     private EditText urlInput;
+    private EditText historySearch;
+    private EditText favouritesSearch;
+
     private LinearLayout historyLayout;
     private LinearLayout favouritesLayout;
 
     private SharedPreferences prefs;
 
-    private static final String PREFS = "player_data_v5";
+    private static final String PREFS = "player_data_v6";
     private static final String HISTORY = "history";
     private static final String FAVOURITES = "favourites";
 
     private static final String JUST_PLAYER_PACKAGE =
             "com.brouken.player";
 
-    // Premium black theme
+    // =====================================================
+    // PREMIUM BLACK THEME
+    // =====================================================
+
     private static final int BLACK =
             Color.rgb(0, 0, 0);
 
     private static final int CARD =
-            Color.rgb(18, 18, 18);
+            Color.rgb(17, 17, 17);
 
     private static final int CARD_2 =
-            Color.rgb(24, 24, 24);
+            Color.rgb(25, 25, 25);
+
+    private static final int FOCUS =
+            Color.rgb(35, 75, 125);
+
+    private static final int FOCUS_BORDER =
+            Color.rgb(80, 160, 255);
 
     private static final int WHITE =
             Color.rgb(245, 245, 245);
@@ -59,11 +77,30 @@ public class MainActivity extends Activity {
     private static final int GREY =
             Color.rgb(165, 165, 165);
 
+    private static final int BLUE =
+            Color.rgb(80, 160, 255);
+
     private static final int GOLD =
             Color.rgb(255, 193, 7);
 
-    private static final int BLUE =
-            Color.rgb(80, 150, 255);
+    // =====================================================
+    // SORT MODES
+    // =====================================================
+
+    private static final int SORT_NEWEST = 0;
+    private static final int SORT_OLDEST = 1;
+    private static final int SORT_AZ = 2;
+    private static final int SORT_ZA = 3;
+
+    private int historySort =
+            SORT_NEWEST;
+
+    private int favouritesSort =
+            SORT_NEWEST;
+
+    // =====================================================
+    // ACTIVITY
+    // =====================================================
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +116,13 @@ public class MainActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        getWindow().setNavigationBarColor(BLACK);
-        getWindow().setStatusBarColor(BLACK);
+        getWindow().setNavigationBarColor(
+                BLACK
+        );
+
+        getWindow().setStatusBarColor(
+                BLACK
+        );
 
         prefs = getSharedPreferences(
                 PREFS,
@@ -89,8 +131,8 @@ public class MainActivity extends Activity {
 
         createUI();
 
-        refreshFavourites();
         refreshHistory();
+        refreshFavourites();
     }
 
     // =====================================================
@@ -116,6 +158,145 @@ public class MainActivity extends Activity {
         );
     }
 
+    // =====================================================
+    // PREMIUM BUTTON BACKGROUND
+    // =====================================================
+
+    private StateListDrawable createButtonBackground() {
+
+        GradientDrawable normal =
+                new GradientDrawable();
+
+        normal.setColor(CARD_2);
+        normal.setCornerRadius(dp(10));
+        normal.setStroke(
+                dp(1),
+                Color.rgb(45, 45, 45)
+        );
+
+        GradientDrawable focused =
+                new GradientDrawable();
+
+        focused.setColor(FOCUS);
+        focused.setCornerRadius(dp(10));
+        focused.setStroke(
+                dp(3),
+                FOCUS_BORDER
+        );
+
+        GradientDrawable pressed =
+                new GradientDrawable();
+
+        pressed.setColor(
+                Color.rgb(50, 100, 160)
+        );
+
+        pressed.setCornerRadius(dp(10));
+        pressed.setStroke(
+                dp(3),
+                Color.WHITE
+        );
+
+        StateListDrawable states =
+                new StateListDrawable();
+
+        states.addState(
+                new int[]{
+                        android.R.attr.state_pressed
+                },
+                pressed
+        );
+
+        states.addState(
+                new int[]{
+                        android.R.attr.state_focused
+                },
+                focused
+        );
+
+        states.addState(
+                new int[]{},
+                normal
+        );
+
+        return states;
+    }
+
+    private StateListDrawable createInputBackground() {
+
+        GradientDrawable normal =
+                new GradientDrawable();
+
+        normal.setColor(CARD);
+        normal.setCornerRadius(dp(10));
+        normal.setStroke(
+                dp(1),
+                Color.rgb(50, 50, 50)
+        );
+
+        GradientDrawable focused =
+                new GradientDrawable();
+
+        focused.setColor(
+                Color.rgb(20, 25, 32)
+        );
+
+        focused.setCornerRadius(dp(10));
+
+        focused.setStroke(
+                dp(3),
+                FOCUS_BORDER
+        );
+
+        StateListDrawable states =
+                new StateListDrawable();
+
+        states.addState(
+                new int[]{
+                        android.R.attr.state_focused
+                },
+                focused
+        );
+
+        states.addState(
+                new int[]{},
+                normal
+        );
+
+        return states;
+    }
+
+    private Button makeButton(
+            String text
+    ) {
+
+        Button button =
+                new Button(this);
+
+        button.setText(text);
+        button.setTextSize(17);
+        button.setAllCaps(false);
+        button.setGravity(Gravity.CENTER);
+
+        button.setTextColor(WHITE);
+
+        button.setFocusable(true);
+        button.setFocusableInTouchMode(true);
+
+        button.setPadding(
+                dp(8),
+                dp(4),
+                dp(8),
+                dp(4)
+        );
+
+        button.setBackground(
+                createButtonBackground()
+        );
+
+        return button;
+    }
+
     private LinearLayout.LayoutParams buttonWeightParams() {
 
         LinearLayout.LayoutParams params =
@@ -133,34 +314,6 @@ public class MainActivity extends Activity {
         );
 
         return params;
-    }
-
-    private Button makeButton(String text) {
-
-        Button button =
-                new Button(this);
-
-        button.setText(text);
-        button.setTextSize(17);
-        button.setAllCaps(false);
-        button.setGravity(Gravity.CENTER);
-        button.setTextColor(WHITE);
-
-        button.setFocusable(true);
-        button.setFocusableInTouchMode(true);
-
-        button.setPadding(
-                dp(8),
-                dp(4),
-                dp(8),
-                dp(4)
-        );
-
-        button.setBackgroundColor(
-                CARD_2
-        );
-
-        return button;
     }
 
     private TextView makeText(
@@ -228,7 +381,7 @@ public class MainActivity extends Activity {
                 dp(55),
                 dp(30),
                 dp(55),
-                dp(45)
+                dp(50)
         );
 
         root.setBackgroundColor(BLACK);
@@ -264,18 +417,13 @@ public class MainActivity extends Activity {
         );
 
         TextView subtitle =
-                new TextView(this);
+                makeText(
+                        "Paste a video URL • Play instantly on your TV",
+                        18
+                );
 
-        subtitle.setText(
-                "Paste a video URL • Play instantly on your TV"
-        );
-
-        subtitle.setTextSize(18);
         subtitle.setTextColor(GREY);
-
-        subtitle.setGravity(
-                Gravity.CENTER
-        );
+        subtitle.setGravity(Gravity.CENTER);
 
         LinearLayout.LayoutParams subtitleParams =
                 fullParams();
@@ -303,7 +451,7 @@ public class MainActivity extends Activity {
         );
 
         urlInput.setHintTextColor(
-                Color.rgb(120, 120, 120)
+                Color.rgb(115, 115, 115)
         );
 
         urlInput.setTextColor(WHITE);
@@ -317,8 +465,8 @@ public class MainActivity extends Activity {
                 dp(10)
         );
 
-        urlInput.setBackgroundColor(
-                CARD
+        urlInput.setBackground(
+                createInputBackground()
         );
 
         root.addView(
@@ -423,14 +571,77 @@ public class MainActivity extends Activity {
                 fullParams();
 
         favTitleParams.topMargin =
-                dp(35);
+                dp(38);
 
         favTitleParams.bottomMargin =
-                dp(10);
+                dp(12);
 
         root.addView(
                 favTitle,
                 favTitleParams
+        );
+
+        // SEARCH FAVOURITES
+
+        favouritesSearch =
+                createSearchBox(
+                        "🔍  Search favourites by name or URL..."
+                );
+
+        root.addView(
+                favouritesSearch,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(62)
+                )
+        );
+
+        favouritesSearch.setOnFocusChangeListener(
+                (v, hasFocus) -> {
+                    if (!hasFocus) {
+                        refreshFavourites();
+                    }
+                }
+        );
+
+        favouritesSearch.addTextChangedListener(
+                new android.text.TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
+                        refreshFavourites();
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            android.text.Editable s
+                    ) {
+                    }
+                }
+        );
+
+        // FAVOURITE SORT
+
+        LinearLayout favouriteSort =
+                createSortBar(true);
+
+        root.addView(
+                favouriteSort,
+                fullParams()
         );
 
         favouritesLayout =
@@ -444,9 +655,15 @@ public class MainActivity extends Activity {
                 BLACK
         );
 
+        LinearLayout.LayoutParams favListParams =
+                fullParams();
+
+        favListParams.topMargin =
+                dp(10);
+
         root.addView(
                 favouritesLayout,
-                fullParams()
+                favListParams
         );
 
         Button clearFav =
@@ -461,7 +678,7 @@ public class MainActivity extends Activity {
                 dp(58);
 
         clearFavParams.topMargin =
-                dp(10);
+                dp(12);
 
         root.addView(
                 clearFav,
@@ -485,14 +702,69 @@ public class MainActivity extends Activity {
                 fullParams();
 
         historyTitleParams.topMargin =
-                dp(38);
+                dp(42);
 
         historyTitleParams.bottomMargin =
-                dp(10);
+                dp(12);
 
         root.addView(
                 historyTitle,
                 historyTitleParams
+        );
+
+        // SEARCH HISTORY
+
+        historySearch =
+                createSearchBox(
+                        "🔍  Search history by name or URL..."
+                );
+
+        root.addView(
+                historySearch,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(62)
+                )
+        );
+
+        historySearch.addTextChangedListener(
+                new android.text.TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
+                        refreshHistory();
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            android.text.Editable s
+                    ) {
+                    }
+                }
+        );
+
+        // HISTORY SORT
+
+        LinearLayout historySortBar =
+                createSortBar(false);
+
+        root.addView(
+                historySortBar,
+                fullParams()
         );
 
         historyLayout =
@@ -506,9 +778,15 @@ public class MainActivity extends Activity {
                 BLACK
         );
 
+        LinearLayout.LayoutParams historyListParams =
+                fullParams();
+
+        historyListParams.topMargin =
+                dp(10);
+
         root.addView(
                 historyLayout,
-                fullParams()
+                historyListParams
         );
 
         Button clearHistory =
@@ -540,6 +818,211 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
+    // SEARCH BOX
+    // =====================================================
+
+    private EditText createSearchBox(
+            String hint
+    ) {
+
+        EditText search =
+                new EditText(this);
+
+        search.setHint(hint);
+
+        search.setHintTextColor(
+                Color.rgb(115, 115, 115)
+        );
+
+        search.setTextColor(WHITE);
+
+        search.setSingleLine(true);
+
+        search.setTextSize(18);
+
+        search.setPadding(
+                dp(18),
+                dp(8),
+                dp(18),
+                dp(8)
+        );
+
+        search.setBackground(
+                createInputBackground()
+        );
+
+        return search;
+    }
+
+    // =====================================================
+    // SORT BAR
+    // =====================================================
+
+    private LinearLayout createSortBar(
+            boolean favourites
+    ) {
+
+        LinearLayout bar =
+                new LinearLayout(this);
+
+        bar.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        bar.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
+
+        Button newest =
+                makeButton(
+                        "NEWEST"
+                );
+
+        Button oldest =
+                makeButton(
+                        "OLDEST"
+                );
+
+        Button az =
+                makeButton(
+                        "A-Z"
+                );
+
+        Button za =
+                makeButton(
+                        "Z-A"
+                );
+
+        bar.addView(
+                newest,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                oldest,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                az,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                za,
+                buttonWeightParams()
+        );
+
+        newest.setOnClickListener(
+                v -> {
+
+                    if (favourites) {
+
+                        favouritesSort =
+                                SORT_NEWEST;
+
+                        refreshFavourites();
+
+                    } else {
+
+                        historySort =
+                                SORT_NEWEST;
+
+                        refreshHistory();
+                    }
+                }
+        );
+
+        oldest.setOnClickListener(
+                v -> {
+
+                    if (favourites) {
+
+                        favouritesSort =
+                                SORT_OLDEST;
+
+                        refreshFavourites();
+
+                    } else {
+
+                        historySort =
+                                SORT_OLDEST;
+
+                        refreshHistory();
+                    }
+                }
+        );
+
+        az.setOnClickListener(
+                v -> {
+
+                    if (favourites) {
+
+                        favouritesSort =
+                                SORT_AZ;
+
+                        refreshFavourites();
+
+                    } else {
+
+                        historySort =
+                                SORT_AZ;
+
+                        refreshHistory();
+                    }
+                }
+        );
+
+        za.setOnClickListener(
+                v -> {
+
+                    if (favourites) {
+
+                        favouritesSort =
+                                SORT_ZA;
+
+                        refreshFavourites();
+
+                    } else {
+
+                        historySort =
+                                SORT_ZA;
+
+                        refreshHistory();
+                    }
+                }
+        );
+
+        // Remote navigation
+
+        newest.setNextFocusRightId(
+                oldest.getId()
+        );
+
+        oldest.setNextFocusLeftId(
+                newest.getId()
+        );
+
+        oldest.setNextFocusRightId(
+                az.getId()
+        );
+
+        az.setNextFocusLeftId(
+                oldest.getId()
+        );
+
+        az.setNextFocusRightId(
+                za.getId()
+        );
+
+        za.setNextFocusLeftId(
+                az.getId()
+        );
+
+        return bar;
+    }
+
+    // =====================================================
     // CURRENT URL
     // =====================================================
 
@@ -567,7 +1050,7 @@ public class MainActivity extends Activity {
 
         addHistory(url);
 
-        openInJustPlayer(url);
+        openInJustPlayerFresh(url);
     }
 
     private void choosePlayerForCurrentUrl() {
@@ -586,7 +1069,7 @@ public class MainActivity extends Activity {
 
         addHistory(url);
 
-        openPlayerChooser(url);
+        openPlayerChooserFresh(url);
     }
 
     private void addCurrentToFavourites() {
@@ -607,10 +1090,10 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // JUST PLAYER
+    // PLAY FRESH
     // =====================================================
 
-    private void openInJustPlayer(
+    private void openInJustPlayerFresh(
             String url
     ) {
 
@@ -630,6 +1113,12 @@ public class MainActivity extends Activity {
                     JUST_PLAYER_PACKAGE
             );
 
+            /*
+             * Fresh launch:
+             * Don't reuse the currently opened
+             * player activity when Android allows it.
+             */
+
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK
             );
@@ -639,24 +1128,52 @@ public class MainActivity extends Activity {
             );
 
             intent.addFlags(
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK
             );
 
             startActivity(intent);
 
         } catch (Exception e) {
 
-            showMessage(
-                    "Just Player is not installed"
-            );
+            // Fallback if the player doesn't support
+            // the aggressive fresh-task flags.
+
+            try {
+
+                Intent fallback =
+                        new Intent(
+                                Intent.ACTION_VIEW
+                        );
+
+                fallback.setDataAndType(
+                        Uri.parse(url),
+                        "video/*"
+                );
+
+                fallback.setPackage(
+                        JUST_PLAYER_PACKAGE
+                );
+
+                fallback.addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                );
+
+                startActivity(fallback);
+
+            } catch (Exception ignored) {
+
+                showMessage(
+                        "Just Player is not installed"
+                );
+            }
         }
     }
 
     // =====================================================
-    // PLAYER CHOOSER
+    // CHOOSE ANY PLAYER
     // =====================================================
 
-    private void openPlayerChooser(
+    private void openPlayerChooserFresh(
             String url
     ) {
 
@@ -676,6 +1193,10 @@ public class MainActivity extends Activity {
                     Intent.FLAG_ACTIVITY_NEW_TASK
             );
 
+            videoIntent.addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+            );
+
             Intent chooser =
                     Intent.createChooser(
                             videoIntent,
@@ -690,6 +1211,33 @@ public class MainActivity extends Activity {
                     "No compatible video player found"
             );
         }
+    }
+
+    // =====================================================
+    // COPY URL
+    // =====================================================
+
+    private void copyUrl(
+            String url
+    ) {
+
+        ClipboardManager clipboard =
+                (ClipboardManager)
+                        getSystemService(
+                                CLIPBOARD_SERVICE
+                        );
+
+        ClipData clip =
+                ClipData.newPlainText(
+                        "Video URL",
+                        url
+                );
+
+        clipboard.setPrimaryClip(clip);
+
+        showMessage(
+                "📋 URL copied"
+        );
     }
 
     // =====================================================
@@ -710,6 +1258,14 @@ public class MainActivity extends Activity {
 
         VideoItem item =
                 createItem(url);
+
+        /*
+         * History timestamp means
+         * LAST PLAYED time.
+         */
+
+        item.timestamp =
+                System.currentTimeMillis();
 
         history.add(
                 0,
@@ -734,18 +1290,45 @@ public class MainActivity extends Activity {
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        if (history.isEmpty()) {
+        String query = "";
+
+        if (historySearch != null) {
+
+            query =
+                    historySearch
+                            .getText()
+                            .toString()
+                            .trim()
+                            .toLowerCase(
+                                    Locale.getDefault()
+                            );
+        }
+
+        List<VideoItem> filtered =
+                filterItems(
+                        history,
+                        query
+                );
+
+        sortItems(
+                filtered,
+                historySort
+        );
+
+        if (filtered.isEmpty()) {
 
             addEmptyText(
                     historyLayout,
-                    "No recently used videos"
+                    query.isEmpty()
+                            ? "No recently used videos"
+                            : "No matching history"
             );
 
             return;
         }
 
         for (VideoItem item :
-                history) {
+                filtered) {
 
             addVideoRow(
                     historyLayout,
@@ -778,8 +1361,16 @@ public class MainActivity extends Activity {
             return;
         }
 
+        /*
+         * Favourite timestamp is
+         * FAVOURITE ADDED time.
+         */
+
         VideoItem item =
                 createItem(url);
+
+        item.timestamp =
+                System.currentTimeMillis();
 
         favourites.add(
                 0,
@@ -832,23 +1423,185 @@ public class MainActivity extends Activity {
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        if (favourites.isEmpty()) {
+        String query = "";
+
+        if (favouritesSearch != null) {
+
+            query =
+                    favouritesSearch
+                            .getText()
+                            .toString()
+                            .trim()
+                            .toLowerCase(
+                                    Locale.getDefault()
+                            );
+        }
+
+        List<VideoItem> filtered =
+                filterItems(
+                        favourites,
+                        query
+                );
+
+        sortItems(
+                filtered,
+                favouritesSort
+        );
+
+        if (filtered.isEmpty()) {
 
             addEmptyText(
                     favouritesLayout,
-                    "No favourite videos yet"
+                    query.isEmpty()
+                            ? "No favourite videos yet"
+                            : "No matching favourites"
             );
 
             return;
         }
 
         for (VideoItem item :
-                favourites) {
+                filtered) {
 
             addVideoRow(
                     favouritesLayout,
                     item,
                     true
+            );
+        }
+    }
+
+    // =====================================================
+    // FILTER
+    // =====================================================
+
+    private List<VideoItem> filterItems(
+            List<VideoItem> source,
+            String query
+    ) {
+
+        List<VideoItem> result =
+                new ArrayList<>();
+
+        if (query.isEmpty()) {
+
+            result.addAll(source);
+
+            return result;
+        }
+
+        for (VideoItem item :
+                source) {
+
+            String name =
+                    item.fileName
+                            .toLowerCase(
+                                    Locale.getDefault()
+                            );
+
+            String url =
+                    item.url
+                            .toLowerCase(
+                                    Locale.getDefault()
+                            );
+
+            if (name.contains(query)
+                    || url.contains(query)) {
+
+                result.add(item);
+            }
+        }
+
+        return result;
+    }
+
+    // =====================================================
+    // SORT
+    // =====================================================
+
+    private void sortItems(
+            List<VideoItem> items,
+            int sortMode
+    ) {
+
+        if (sortMode == SORT_NEWEST) {
+
+            Collections.sort(
+                    items,
+                    (a, b) ->
+                            Long.compare(
+                                    b.timestamp,
+                                    a.timestamp
+                            )
+            );
+
+        } else if (
+                sortMode ==
+                        SORT_OLDEST
+        ) {
+
+            Collections.sort(
+                    items,
+                    (a, b) ->
+                            Long.compare(
+                                    a.timestamp,
+                                    b.timestamp
+                            )
+            );
+
+        } else if (
+                sortMode ==
+                        SORT_AZ
+        ) {
+
+            Collections.sort(
+                    items,
+                    new Comparator<VideoItem>() {
+
+                        @Override
+                        public int compare(
+                                VideoItem a,
+                                VideoItem b
+                        ) {
+
+                            return a.fileName
+                                    .toLowerCase(
+                                            Locale.getDefault()
+                                    )
+                                    .compareTo(
+                                            b.fileName
+                                                    .toLowerCase(
+                                                            Locale.getDefault()
+                                                    )
+                                    );
+                        }
+                    }
+            );
+
+        } else {
+
+            Collections.sort(
+                    items,
+                    new Comparator<VideoItem>() {
+
+                        @Override
+                        public int compare(
+                                VideoItem a,
+                                VideoItem b
+                        ) {
+
+                            return b.fileName
+                                    .toLowerCase(
+                                            Locale.getDefault()
+                                    )
+                                    .compareTo(
+                                            a.fileName
+                                                    .toLowerCase(
+                                                            Locale.getDefault()
+                                                    )
+                                    );
+                        }
+                    }
             );
         }
     }
@@ -877,9 +1630,18 @@ public class MainActivity extends Activity {
                 dp(14)
         );
 
-        container.setBackgroundColor(
-                CARD
+        GradientDrawable card =
+                new GradientDrawable();
+
+        card.setColor(CARD);
+        card.setCornerRadius(dp(12));
+
+        card.setStroke(
+                dp(1),
+                Color.rgb(40, 40, 40)
         );
+
+        container.setBackground(card);
 
         // =================================================
         // FILE NAME
@@ -905,7 +1667,7 @@ public class MainActivity extends Activity {
         );
 
         // =================================================
-        // DATE + TIME
+        // DATE / TIME
         // =================================================
 
         TextView date =
@@ -979,10 +1741,13 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        // PLAY
+        // =================================================
+        // PLAY FRESH
+        // =================================================
+
         Button play =
                 makeButton(
-                        "▶ PLAY"
+                        "▶ PLAY FRESH"
                 );
 
         buttons.addView(
@@ -1001,13 +1766,16 @@ public class MainActivity extends Activity {
                             item.url
                     );
 
-                    openInJustPlayer(
+                    openInJustPlayerFresh(
                             item.url
                     );
                 }
         );
 
+        // =================================================
         // CHOOSE PLAYER
+        // =================================================
+
         Button choose =
                 makeButton(
                         "🎬 PLAYER"
@@ -1029,13 +1797,34 @@ public class MainActivity extends Activity {
                             item.url
                     );
 
-                    openPlayerChooser(
+                    openPlayerChooserFresh(
                             item.url
                     );
                 }
         );
 
+        // =================================================
+        // COPY
+        // =================================================
+
+        Button copy =
+                makeButton(
+                        "📋 COPY"
+                );
+
+        buttons.addView(
+                copy,
+                buttonWeightParams()
+        );
+
+        copy.setOnClickListener(
+                v -> copyUrl(item.url)
+        );
+
+        // =================================================
         // FAVOURITE
+        // =================================================
+
         Button favourite =
                 makeButton(
                         favouriteSection
@@ -1079,7 +1868,10 @@ public class MainActivity extends Activity {
                 }
         );
 
+        // =================================================
         // DELETE
+        // =================================================
+
         Button delete =
                 makeButton(
                         "🗑"
@@ -1126,11 +1918,19 @@ public class MainActivity extends Activity {
         );
 
         choose.setNextFocusRightId(
+                copy.getId()
+        );
+
+        copy.setNextFocusLeftId(
+                choose.getId()
+        );
+
+        copy.setNextFocusRightId(
                 favourite.getId()
         );
 
         favourite.setNextFocusLeftId(
-                choose.getId()
+                copy.getId()
         );
 
         favourite.setNextFocusRightId(
@@ -1154,7 +1954,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // DELETE CONFIRMATION
+    // DELETE CONFIRMATIONS
     // =====================================================
 
     private void confirmDeleteHistory(
