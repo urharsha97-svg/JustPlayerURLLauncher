@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -19,26 +19,25 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class MainActivity extends Activity {
 
     private EditText urlInput;
+
     private LinearLayout historyLayout;
     private LinearLayout favouritesLayout;
 
-    private SharedPreferences preferences;
+    private SharedPreferences prefs;
 
-    private static final String PREFS = "url_data";
-    private static final String HISTORY = "history";
-    private static final String FAVOURITES = "favourites";
+    private static final String PREFS = "player_data";
+    private static final String HISTORY = "history_data";
+    private static final String FAVOURITES = "favourite_data";
 
-    private static final int MAX_HISTORY = 10;
-
-    private int dp(float value) {
+    private int dp(int value) {
         return (int) (
                 value * getResources()
                         .getDisplayMetrics()
@@ -57,41 +56,58 @@ public class MainActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        preferences = getSharedPreferences(
+        prefs = getSharedPreferences(
                 PREFS,
                 Context.MODE_PRIVATE
         );
 
-        buildTVUI();
-        loadHistory();
-        loadFavourites();
+        createUI();
+
+        refreshHistory();
+        refreshFavourites();
     }
 
-    private void buildTVUI() {
+    private void createUI() {
+
+        ScrollView mainScroll = new ScrollView(this);
+
+        mainScroll.setFillViewport(true);
 
         LinearLayout root = new LinearLayout(this);
 
-        root.setOrientation(LinearLayout.VERTICAL);
-        root.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
 
         root.setPadding(
-                dp(70),
+                dp(55),
                 dp(30),
-                dp(70),
-                dp(30)
+                dp(55),
+                dp(40)
         );
+
+        root.setGravity(
+                Gravity.CENTER_HORIZONTAL
+        );
+
+        mainScroll.addView(root);
+
+        // ---------------- TITLE ----------------
 
         TextView title = new TextView(this);
 
         title.setText("JUST PLAYER");
         title.setTextSize(38);
-        title.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
-        );
         title.setGravity(Gravity.CENTER);
+        title.setTypeface(
+                null,
+                android.graphics.Typeface.BOLD
+        );
 
-        root.addView(title);
+        root.addView(
+                title,
+                fullParams()
+        );
 
         TextView subtitle = new TextView(this);
 
@@ -103,21 +119,24 @@ public class MainActivity extends Activity {
         subtitle.setGravity(Gravity.CENTER);
 
         LinearLayout.LayoutParams subtitleParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
+                fullParams();
 
-        subtitleParams.bottomMargin = dp(25);
+        subtitleParams.bottomMargin =
+                dp(25);
 
         root.addView(
                 subtitle,
                 subtitleParams
         );
 
+        // ---------------- URL INPUT ----------------
+
         urlInput = new EditText(this);
 
-        urlInput.setHint("Paste video URL here");
+        urlInput.setHint(
+                "Paste video URL here"
+        );
+
         urlInput.setSingleLine(true);
         urlInput.setTextSize(22);
 
@@ -128,26 +147,28 @@ public class MainActivity extends Activity {
                 dp(10)
         );
 
-        LinearLayout.LayoutParams inputParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(70)
-                );
+        urlInput.setFocusable(true);
+        urlInput.setFocusableInTouchMode(true);
 
         root.addView(
                 urlInput,
-                inputParams
-        );
-
-        Button playButton =
-                createButton("▶  OPEN IN JUST PLAYER");
-
-        LinearLayout.LayoutParams playParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(70)
+                        dp(72)
+                )
+        );
+
+        // ---------------- PLAY BUTTON ----------------
+
+        Button playButton =
+                makeButton(
+                        "▶  OPEN IN JUST PLAYER"
                 );
 
+        LinearLayout.LayoutParams playParams =
+                fullParams();
+
+        playParams.height = dp(68);
         playParams.topMargin = dp(15);
 
         root.addView(
@@ -156,23 +177,54 @@ public class MainActivity extends Activity {
         );
 
         playButton.setOnClickListener(
-                v -> openCurrentUrl()
+                v -> playTypedUrl()
         );
 
-        /*
-         * FAVOURITES
-         */
+        // ---------------- FAVOURITE CURRENT URL ----------------
 
-        TextView favouriteTitle =
-                createSectionTitle("⭐ FAVOURITES");
+        Button favouriteCurrent =
+                makeButton(
+                        "☆  ADD CURRENT URL TO FAVOURITES"
+                );
+
+        LinearLayout.LayoutParams favCurrentParams =
+                fullParams();
+
+        favCurrentParams.height =
+                dp(62);
+
+        favCurrentParams.topMargin =
+                dp(10);
 
         root.addView(
-                favouriteTitle,
-                sectionParams()
+                favouriteCurrent,
+                favCurrentParams
         );
 
-        ScrollView favouriteScroll =
-                new ScrollView(this);
+        favouriteCurrent.setOnClickListener(
+                v -> favouriteCurrentUrl()
+        );
+
+        // ---------------- FAVOURITES TITLE ----------------
+
+        TextView favTitle =
+                sectionTitle(
+                        "⭐ FAVOURITES"
+                );
+
+        LinearLayout.LayoutParams favTitleParams =
+                fullParams();
+
+        favTitleParams.topMargin =
+                dp(30);
+
+        favTitleParams.bottomMargin =
+                dp(10);
+
+        root.addView(
+                favTitle,
+                favTitleParams
+        );
 
         favouritesLayout =
                 new LinearLayout(this);
@@ -181,35 +233,56 @@ public class MainActivity extends Activity {
                 LinearLayout.VERTICAL
         );
 
-        favouriteScroll.addView(
-                favouritesLayout
+        root.addView(
+                favouritesLayout,
+                fullParams()
         );
 
-        LinearLayout.LayoutParams favouriteScrollParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(170)
+        // ---------------- CLEAR FAVOURITES ----------------
+
+        Button clearFavourites =
+                makeButton(
+                        "🧹 CLEAR ALL FAVOURITES"
                 );
 
+        LinearLayout.LayoutParams clearFavParams =
+                fullParams();
+
+        clearFavParams.height =
+                dp(58);
+
+        clearFavParams.topMargin =
+                dp(10);
+
         root.addView(
-                favouriteScroll,
-                favouriteScrollParams
+                clearFavourites,
+                clearFavParams
         );
 
-        /*
-         * LAST USED
-         */
+        clearFavourites.setOnClickListener(
+                v -> clearFavourites()
+        );
+
+        // ---------------- HISTORY TITLE ----------------
 
         TextView historyTitle =
-                createSectionTitle("🕘 LAST-USED URLs");
+                sectionTitle(
+                        "🕘 LAST-USED URLs"
+                );
+
+        LinearLayout.LayoutParams historyTitleParams =
+                fullParams();
+
+        historyTitleParams.topMargin =
+                dp(35);
+
+        historyTitleParams.bottomMargin =
+                dp(10);
 
         root.addView(
                 historyTitle,
-                sectionParams()
+                historyTitleParams
         );
-
-        ScrollView historyScroll =
-                new ScrollView(this);
 
         historyLayout =
                 new LinearLayout(this);
@@ -218,65 +291,50 @@ public class MainActivity extends Activity {
                 LinearLayout.VERTICAL
         );
 
-        historyScroll.addView(
-                historyLayout
+        root.addView(
+                historyLayout,
+                fullParams()
         );
 
-        LinearLayout.LayoutParams historyScrollParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        0,
-                        1
+        // ---------------- CLEAR HISTORY ----------------
+
+        Button clearHistory =
+                makeButton(
+                        "🧹 CLEAR ALL HISTORY"
                 );
 
-        root.addView(
-                historyScroll,
-                historyScrollParams
-        );
+        LinearLayout.LayoutParams clearHistoryParams =
+                fullParams();
 
-        Button clearButton =
-                createButton("CLEAR HISTORY");
+        clearHistoryParams.height =
+                dp(58);
 
-        LinearLayout.LayoutParams clearParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(60)
-                );
-
-        clearParams.topMargin = dp(12);
+        clearHistoryParams.topMargin =
+                dp(12);
 
         root.addView(
-                clearButton,
-                clearParams
+                clearHistory,
+                clearHistoryParams
         );
 
-        clearButton.setOnClickListener(
+        clearHistory.setOnClickListener(
                 v -> clearHistory()
         );
 
-        setContentView(root);
+        setContentView(mainScroll);
 
-        /*
-         * Remote starts here
-         */
         urlInput.requestFocus();
     }
 
-    private LinearLayout.LayoutParams sectionParams() {
+    private LinearLayout.LayoutParams fullParams() {
 
-        LinearLayout.LayoutParams params =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-
-        params.topMargin = dp(18);
-        params.bottomMargin = dp(8);
-
-        return params;
+        return new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
     }
 
-    private TextView createSectionTitle(
+    private TextView sectionTitle(
             String text
     ) {
 
@@ -284,19 +342,18 @@ public class MainActivity extends Activity {
                 new TextView(this);
 
         title.setText(text);
-        title.setTextSize(24);
+        title.setTextSize(26);
+        title.setGravity(Gravity.CENTER);
 
         title.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
+                null,
+                android.graphics.Typeface.BOLD
         );
-
-        title.setGravity(Gravity.CENTER);
 
         return title;
     }
 
-    private Button createButton(
+    private Button makeButton(
             String text
     ) {
 
@@ -304,38 +361,31 @@ public class MainActivity extends Activity {
                 new Button(this);
 
         button.setText(text);
-        button.setTextSize(20);
-
-        button.setTypeface(
-                Typeface.DEFAULT,
-                Typeface.BOLD
-        );
-
+        button.setTextSize(19);
         button.setAllCaps(false);
 
-        button.setGravity(Gravity.CENTER);
+        button.setGravity(
+                Gravity.CENTER
+        );
 
-        /*
-         * Android TV remote focus
-         */
         button.setFocusable(true);
         button.setFocusableInTouchMode(true);
 
         button.setPadding(
-                dp(20),
+                dp(15),
                 dp(8),
-                dp(20),
+                dp(15),
                 dp(8)
         );
 
         return button;
     }
 
-    /*
-     * OPEN CURRENT URL
-     */
+    // =====================================================
+    // PLAY
+    // =====================================================
 
-    private void openCurrentUrl() {
+    private void playTypedUrl() {
 
         String url =
                 urlInput
@@ -354,16 +404,12 @@ public class MainActivity extends Activity {
             return;
         }
 
-        saveHistory(url);
+        addToHistory(url);
 
-        openInJustPlayer(url);
+        openJustPlayer(url);
     }
 
-    /*
-     * OPEN IN JUST PLAYER
-     */
-
-    private void openInJustPlayer(
+    private void openJustPlayer(
             String url
     ) {
 
@@ -395,84 +441,54 @@ public class MainActivity extends Activity {
         }
     }
 
-    /*
-     * HISTORY
-     */
+    // =====================================================
+    // HISTORY
+    // =====================================================
 
-    private void saveHistory(
+    private void addToHistory(
             String url
     ) {
 
-        Set<String> saved =
-                preferences.getStringSet(
-                        HISTORY,
-                        new HashSet<>()
-                );
+        List<String> list =
+                getList(HISTORY);
 
-        List<String> urls =
-                new ArrayList<>(saved);
+        // Remove old copy
+        list.remove(url);
 
-        urls.remove(url);
+        // Newest first
+        list.add(0, url);
 
-        urls.add(0, url);
+        saveList(
+                HISTORY,
+                list
+        );
 
-        while (urls.size() > MAX_HISTORY) {
-
-            urls.remove(
-                    urls.size() - 1
-            );
-        }
-
-        preferences.edit()
-                .putStringSet(
-                        HISTORY,
-                        new HashSet<>(urls)
-                )
-                .apply();
-
-        loadHistory();
+        refreshHistory();
     }
 
-    private void loadHistory() {
+    private void refreshHistory() {
 
         if (historyLayout == null)
             return;
 
         historyLayout.removeAllViews();
 
-        Set<String> saved =
-                preferences.getStringSet(
-                        HISTORY,
-                        new HashSet<>()
-                );
+        List<String> history =
+                getList(HISTORY);
 
-        List<String> urls =
-                new ArrayList<>(saved);
+        if (history.isEmpty()) {
 
-        if (urls.isEmpty()) {
-
-            TextView empty =
-                    new TextView(this);
-
-            empty.setText(
+            addEmptyText(
+                    historyLayout,
                     "No recently used URLs"
-            );
-
-            empty.setTextSize(19);
-            empty.setGravity(
-                    Gravity.CENTER
-            );
-
-            historyLayout.addView(
-                    empty
             );
 
             return;
         }
 
-        for (String url : urls) {
+        for (String url : history) {
 
-            addURLRow(
+            addUrlRow(
                     historyLayout,
                     url,
                     false
@@ -480,100 +496,106 @@ public class MainActivity extends Activity {
         }
     }
 
-    /*
-     * FAVOURITES
-     */
+    // =====================================================
+    // FAVOURITES
+    // =====================================================
 
-    private boolean isFavourite(
-            String url
-    ) {
+    private void favouriteCurrentUrl() {
 
-        Set<String> favourites =
-                preferences.getStringSet(
-                        FAVOURITES,
-                        new HashSet<>()
-                );
+        String url =
+                urlInput
+                        .getText()
+                        .toString()
+                        .trim();
 
-        return favourites.contains(url);
-    }
-
-    private void toggleFavourite(
-            String url
-    ) {
-
-        Set<String> saved =
-                preferences.getStringSet(
-                        FAVOURITES,
-                        new HashSet<>()
-                );
-
-        Set<String> favourites =
-                new HashSet<>(saved);
-
-        if (favourites.contains(url)) {
-
-            favourites.remove(url);
+        if (url.isEmpty()) {
 
             Toast.makeText(
                     this,
-                    "Removed from favourites",
+                    "Enter a URL first",
                     Toast.LENGTH_SHORT
             ).show();
 
-        } else {
+            return;
+        }
 
-            favourites.add(url);
+        addFavourite(url);
+    }
+
+    private void addFavourite(
+            String url
+    ) {
+
+        List<String> favourites =
+                getList(FAVOURITES);
+
+        if (!favourites.contains(url)) {
+
+            favourites.add(0, url);
+
+            saveList(
+                    FAVOURITES,
+                    favourites
+            );
 
             Toast.makeText(
                     this,
                     "Added to favourites",
                     Toast.LENGTH_SHORT
             ).show();
+
+        } else {
+
+            Toast.makeText(
+                    this,
+                    "Already in favourites",
+                    Toast.LENGTH_SHORT
+            ).show();
         }
 
-        preferences.edit()
-                .putStringSet(
-                        FAVOURITES,
-                        favourites
-                )
-                .apply();
-
-        loadFavourites();
-        loadHistory();
+        refreshFavourites();
+        refreshHistory();
     }
 
-    private void loadFavourites() {
+    private void removeFavourite(
+            String url
+    ) {
+
+        List<String> favourites =
+                getList(FAVOURITES);
+
+        favourites.remove(url);
+
+        saveList(
+                FAVOURITES,
+                favourites
+        );
+
+        refreshFavourites();
+        refreshHistory();
+
+        Toast.makeText(
+                this,
+                "Removed from favourites",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    private void refreshFavourites() {
 
         if (favouritesLayout == null)
             return;
 
         favouritesLayout.removeAllViews();
 
-        Set<String> saved =
-                preferences.getStringSet(
-                        FAVOURITES,
-                        new HashSet<>()
-                );
-
         List<String> favourites =
-                new ArrayList<>(saved);
+                getList(FAVOURITES);
 
         if (favourites.isEmpty()) {
 
-            TextView empty =
-                    new TextView(this);
-
-            empty.setText(
+            addEmptyText(
+                    favouritesLayout,
                     "No favourite URLs yet"
-            );
-
-            empty.setTextSize(19);
-            empty.setGravity(
-                    Gravity.CENTER
-            );
-
-            favouritesLayout.addView(
-                    empty
             );
 
             return;
@@ -581,7 +603,7 @@ public class MainActivity extends Activity {
 
         for (String url : favourites) {
 
-            addURLRow(
+            addUrlRow(
                     favouritesLayout,
                     url,
                     true
@@ -589,14 +611,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    /*
-     * URL ROW
-     *
-     * OK = play
-     * RIGHT = favourite
-     */
+    // =====================================================
+    // URL ROW
+    // =====================================================
 
-    private void addURLRow(
+    private void addUrlRow(
             LinearLayout parent,
             String url,
             boolean favouriteSection
@@ -613,19 +632,17 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        /*
-         * URL PLAY BUTTON
-         */
+        // PLAY
 
         Button play =
-                createButton(
-                        "▶  " + url
+                makeButton(
+                        "▶  " + shorten(url)
                 );
 
         LinearLayout.LayoutParams playParams =
                 new LinearLayout.LayoutParams(
                         0,
-                        dp(62),
+                        dp(65),
                         1
                 );
 
@@ -634,47 +651,83 @@ public class MainActivity extends Activity {
                 playParams
         );
 
-        play.setOnClickListener(v -> {
+        play.setOnClickListener(
+                v -> {
 
-            urlInput.setText(url);
+                    urlInput.setText(url);
 
-            saveHistory(url);
+                    addToHistory(url);
 
-            openInJustPlayer(url);
-        });
+                    openJustPlayer(url);
+                }
+        );
 
-        /*
-         * STAR BUTTON
-         */
+        // FAVOURITE
 
-        Button star =
-                createButton(
-                        isFavourite(url)
+        Button favourite =
+                makeButton(
+                        favouriteSection
                                 ? "★"
                                 : "☆"
                 );
 
-        LinearLayout.LayoutParams starParams =
+        LinearLayout.LayoutParams favouriteParams =
                 new LinearLayout.LayoutParams(
                         dp(75),
-                        dp(62)
+                        dp(65)
                 );
 
         row.addView(
-                star,
-                starParams
+                favourite,
+                favouriteParams
         );
 
-        star.setOnClickListener(
-                v -> toggleFavourite(url)
+        favourite.setOnClickListener(
+                v -> {
+
+                    if (favouriteSection) {
+
+                        removeFavourite(url);
+
+                    } else {
+
+                        addFavourite(url);
+                    }
+                }
         );
 
-        /*
-         * TV REMOTE:
-         *
-         * LEFT/RIGHT moves between
-         * URL and star.
-         */
+        // DELETE
+
+        Button delete =
+                makeButton("🗑");
+
+        LinearLayout.LayoutParams deleteParams =
+                new LinearLayout.LayoutParams(
+                        dp(75),
+                        dp(65)
+                );
+
+        row.addView(
+                delete,
+                deleteParams
+        );
+
+        delete.setOnClickListener(
+                v -> {
+
+                    if (favouriteSection) {
+
+                        removeFavourite(url);
+
+                    } else {
+
+                        deleteHistory(url);
+                    }
+                }
+        );
+
+        // TV REMOTE:
+        // URL -> STAR -> DELETE
 
         play.setOnKeyListener(
                 (v, keyCode, event) -> {
@@ -683,10 +736,10 @@ public class MainActivity extends Activity {
                             != KeyEvent.ACTION_DOWN)
                         return false;
 
-                    if (keyCode
-                            == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    if (keyCode ==
+                            KeyEvent.KEYCODE_DPAD_RIGHT) {
 
-                        star.requestFocus();
+                        favourite.requestFocus();
 
                         return true;
                     }
@@ -695,17 +748,44 @@ public class MainActivity extends Activity {
                 }
         );
 
-        star.setOnKeyListener(
+        favourite.setOnKeyListener(
                 (v, keyCode, event) -> {
 
                     if (event.getAction()
                             != KeyEvent.ACTION_DOWN)
                         return false;
 
-                    if (keyCode
-                            == KeyEvent.KEYCODE_DPAD_LEFT) {
+                    if (keyCode ==
+                            KeyEvent.KEYCODE_DPAD_LEFT) {
 
                         play.requestFocus();
+
+                        return true;
+                    }
+
+                    if (keyCode ==
+                            KeyEvent.KEYCODE_DPAD_RIGHT) {
+
+                        delete.requestFocus();
+
+                        return true;
+                    }
+
+                    return false;
+                }
+        );
+
+        delete.setOnKeyListener(
+                (v, keyCode, event) -> {
+
+                    if (event.getAction()
+                            != KeyEvent.ACTION_DOWN)
+                        return false;
+
+                    if (keyCode ==
+                            KeyEvent.KEYCODE_DPAD_LEFT) {
+
+                        favourite.requestFocus();
 
                         return true;
                     }
@@ -717,10 +797,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams rowParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(65)
+                        dp(67)
                 );
 
-        rowParams.bottomMargin = dp(8);
+        rowParams.bottomMargin =
+                dp(8);
 
         parent.addView(
                 row,
@@ -728,22 +809,191 @@ public class MainActivity extends Activity {
         );
     }
 
-    /*
-     * CLEAR HISTORY
-     */
+    // =====================================================
+    // DELETE
+    // =====================================================
+
+    private void deleteHistory(
+            String url
+    ) {
+
+        List<String> history =
+                getList(HISTORY);
+
+        history.remove(url);
+
+        saveList(
+                HISTORY,
+                history
+        );
+
+        refreshHistory();
+
+        Toast.makeText(
+                this,
+                "Removed from history",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
 
     private void clearHistory() {
 
-        preferences.edit()
+        prefs.edit()
                 .remove(HISTORY)
                 .apply();
 
-        loadHistory();
+        refreshHistory();
 
         Toast.makeText(
                 this,
                 "History cleared",
                 Toast.LENGTH_SHORT
         ).show();
+    }
+
+    private void clearFavourites() {
+
+        prefs.edit()
+                .remove(FAVOURITES)
+                .apply();
+
+        refreshFavourites();
+        refreshHistory();
+
+        Toast.makeText(
+                this,
+                "Favourites cleared",
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    // =====================================================
+    // STORAGE
+    // =====================================================
+
+    /*
+     * URLs are Base64 encoded before storage.
+     * This allows separators and special characters
+     * inside URLs without breaking the list.
+     */
+
+    private void saveList(
+            String key,
+            List<String> list
+    ) {
+
+        StringBuilder result =
+                new StringBuilder();
+
+        for (String value : list) {
+
+            if (result.length() > 0)
+                result.append("\n");
+
+            result.append(
+                    Base64.encodeToString(
+                            value.getBytes(
+                                    StandardCharsets.UTF_8
+                            ),
+                            Base64.NO_WRAP
+                    )
+            );
+        }
+
+        prefs.edit()
+                .putString(
+                        key,
+                        result.toString()
+                )
+                .apply();
+    }
+
+    private List<String> getList(
+            String key
+    ) {
+
+        String data =
+                prefs.getString(
+                        key,
+                        ""
+                );
+
+        List<String> result =
+                new ArrayList<>();
+
+        if (data.isEmpty())
+            return result;
+
+        String[] lines =
+                data.split("\n");
+
+        for (String line : lines) {
+
+            try {
+
+                byte[] decoded =
+                        Base64.decode(
+                                line,
+                                Base64.NO_WRAP
+                        );
+
+                String url =
+                        new String(
+                                decoded,
+                                StandardCharsets.UTF_8
+                        );
+
+                if (!url.isEmpty()
+                        && !result.contains(url)) {
+
+                    result.add(url);
+                }
+
+            } catch (Exception ignored) {
+            }
+        }
+
+        return result;
+    }
+
+    // =====================================================
+    // HELPERS
+    // =====================================================
+
+    private void addEmptyText(
+            LinearLayout parent,
+            String text
+    ) {
+
+        TextView empty =
+                new TextView(this);
+
+        empty.setText(text);
+        empty.setTextSize(19);
+        empty.setGravity(
+                Gravity.CENTER
+        );
+
+        LinearLayout.LayoutParams params =
+                fullParams();
+
+        params.height =
+                dp(55);
+
+        parent.addView(
+                empty,
+                params
+        );
+    }
+
+    private String shorten(
+            String url
+    ) {
+
+        if (url.length() <= 65)
+            return url;
+
+        return url.substring(0, 62)
+                + "...";
     }
 }
