@@ -2,8 +2,6 @@ package com.justplayer.urllauncher;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -65,6 +64,9 @@ public class MainActivity extends Activity {
     private static final int CARD_2 =
             Color.rgb(25, 25, 25);
 
+    private static final int CARD_3 =
+            Color.rgb(30, 30, 30);
+
     private static final int FOCUS =
             Color.rgb(35, 75, 125);
 
@@ -92,11 +94,8 @@ public class MainActivity extends Activity {
     private static final int SORT_AZ = 2;
     private static final int SORT_ZA = 3;
 
-    private int historySort =
-            SORT_NEWEST;
-
-    private int favouritesSort =
-            SORT_NEWEST;
+    private int historySort = SORT_NEWEST;
+    private int favouritesSort = SORT_NEWEST;
 
     // =====================================================
     // ACTIVITY
@@ -116,13 +115,8 @@ public class MainActivity extends Activity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
 
-        getWindow().setNavigationBarColor(
-                BLACK
-        );
-
-        getWindow().setStatusBarColor(
-                BLACK
-        );
+        getWindow().setNavigationBarColor(BLACK);
+        getWindow().setStatusBarColor(BLACK);
 
         prefs = getSharedPreferences(
                 PREFS,
@@ -266,12 +260,14 @@ public class MainActivity extends Activity {
         return states;
     }
 
-    private Button makeButton(
-            String text
-    ) {
+    private Button makeButton(String text) {
 
         Button button =
                 new Button(this);
+
+        button.setId(
+                View.generateViewId()
+        );
 
         button.setText(text);
         button.setTextSize(17);
@@ -355,6 +351,50 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
+    // PREMIUM DIVIDER
+    // =====================================================
+
+    private View createPremiumDivider() {
+
+        View divider =
+                new View(this);
+
+        GradientDrawable background =
+                new GradientDrawable();
+
+        background.setColor(
+                Color.rgb(55, 100, 155)
+        );
+
+        background.setCornerRadius(
+                dp(4)
+        );
+
+        divider.setBackground(
+                background
+        );
+
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(
+                        dp(90),
+                        dp(3)
+                );
+
+        params.gravity =
+                Gravity.CENTER_HORIZONTAL;
+
+        params.topMargin =
+                dp(10);
+
+        params.bottomMargin =
+                dp(18);
+
+        divider.setLayoutParams(params);
+
+        return divider;
+    }
+
+    // =====================================================
     // MAIN UI
     // =====================================================
 
@@ -389,8 +429,29 @@ public class MainActivity extends Activity {
         scrollView.addView(root);
 
         // =================================================
-        // TITLE
+        // PREMIUM HEADER
         // =================================================
+
+        TextView brand =
+                new TextView(this);
+
+        brand.setText(
+                "JUST PLAYER"
+        );
+
+        brand.setTextSize(15);
+        brand.setTextColor(BLUE);
+        brand.setGravity(Gravity.CENTER);
+
+        brand.setTypeface(
+                null,
+                Typeface.BOLD
+        );
+
+        root.addView(
+                brand,
+                fullParams()
+        );
 
         TextView title =
                 new TextView(this);
@@ -411,9 +472,19 @@ public class MainActivity extends Activity {
                 Typeface.BOLD
         );
 
+        LinearLayout.LayoutParams titleParams =
+                fullParams();
+
+        titleParams.topMargin =
+                dp(3);
+
         root.addView(
                 title,
-                fullParams()
+                titleParams
+        );
+
+        root.addView(
+                createPremiumDivider()
         );
 
         TextView subtitle =
@@ -427,9 +498,6 @@ public class MainActivity extends Activity {
 
         LinearLayout.LayoutParams subtitleParams =
                 fullParams();
-
-        subtitleParams.topMargin =
-                dp(5);
 
         subtitleParams.bottomMargin =
                 dp(25);
@@ -581,8 +649,6 @@ public class MainActivity extends Activity {
                 favTitleParams
         );
 
-        // SEARCH FAVOURITES
-
         favouritesSearch =
                 createSearchBox(
                         "🔍  Search favourites by name or URL..."
@@ -598,6 +664,7 @@ public class MainActivity extends Activity {
 
         favouritesSearch.setOnFocusChangeListener(
                 (v, hasFocus) -> {
+
                     if (!hasFocus) {
                         refreshFavourites();
                     }
@@ -633,8 +700,6 @@ public class MainActivity extends Activity {
                     }
                 }
         );
-
-        // FAVOURITE SORT
 
         LinearLayout favouriteSort =
                 createSortBar(true);
@@ -712,8 +777,6 @@ public class MainActivity extends Activity {
                 historyTitleParams
         );
 
-        // SEARCH HISTORY
-
         historySearch =
                 createSearchBox(
                         "🔍  Search history by name or URL..."
@@ -756,8 +819,6 @@ public class MainActivity extends Activity {
                     }
                 }
         );
-
-        // HISTORY SORT
 
         LinearLayout historySortBar =
                 createSortBar(false);
@@ -874,24 +935,16 @@ public class MainActivity extends Activity {
         );
 
         Button newest =
-                makeButton(
-                        "NEWEST"
-                );
+                makeButton("NEWEST");
 
         Button oldest =
-                makeButton(
-                        "OLDEST"
-                );
+                makeButton("OLDEST");
 
         Button az =
-                makeButton(
-                        "A-Z"
-                );
+                makeButton("A-Z");
 
         Button za =
-                makeButton(
-                        "Z-A"
-                );
+                makeButton("Z-A");
 
         bar.addView(
                 newest,
@@ -993,7 +1046,7 @@ public class MainActivity extends Activity {
                 }
         );
 
-        // Remote navigation
+        // TV remote navigation
 
         newest.setNextFocusRightId(
                 oldest.getId()
@@ -1090,7 +1143,7 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // PLAY FRESH
+    // PLAY JUST PLAYER
     // =====================================================
 
     private void openInJustPlayerFresh(
@@ -1113,12 +1166,6 @@ public class MainActivity extends Activity {
                     JUST_PLAYER_PACKAGE
             );
 
-            /*
-             * Fresh launch:
-             * Don't reuse the currently opened
-             * player activity when Android allows it.
-             */
-
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK
             );
@@ -1134,9 +1181,6 @@ public class MainActivity extends Activity {
             startActivity(intent);
 
         } catch (Exception e) {
-
-            // Fallback if the player doesn't support
-            // the aggressive fresh-task flags.
 
             try {
 
@@ -1214,33 +1258,6 @@ public class MainActivity extends Activity {
     }
 
     // =====================================================
-    // COPY URL
-    // =====================================================
-
-    private void copyUrl(
-            String url
-    ) {
-
-        ClipboardManager clipboard =
-                (ClipboardManager)
-                        getSystemService(
-                                CLIPBOARD_SERVICE
-                        );
-
-        ClipData clip =
-                ClipData.newPlainText(
-                        "Video URL",
-                        url
-                );
-
-        clipboard.setPrimaryClip(clip);
-
-        showMessage(
-                "📋 URL copied"
-        );
-    }
-
-    // =====================================================
     // HISTORY
     // =====================================================
 
@@ -1258,11 +1275,6 @@ public class MainActivity extends Activity {
 
         VideoItem item =
                 createItem(url);
-
-        /*
-         * History timestamp means
-         * LAST PLAYED time.
-         */
 
         item.timestamp =
                 System.currentTimeMillis();
@@ -1360,11 +1372,6 @@ public class MainActivity extends Activity {
 
             return;
         }
-
-        /*
-         * Favourite timestamp is
-         * FAVOURITE ADDED time.
-         */
 
         VideoItem item =
                 createItem(url);
@@ -1624,33 +1631,32 @@ public class MainActivity extends Activity {
         );
 
         container.setPadding(
+                dp(18),
                 dp(16),
-                dp(14),
-                dp(16),
-                dp(14)
+                dp(18),
+                dp(16)
         );
 
         GradientDrawable card =
                 new GradientDrawable();
 
         card.setColor(CARD);
-        card.setCornerRadius(dp(12));
+        card.setCornerRadius(dp(14));
 
         card.setStroke(
                 dp(1),
-                Color.rgb(40, 40, 40)
+                Color.rgb(48, 48, 48)
         );
 
         container.setBackground(card);
 
         // =================================================
-        // FILE NAME
+        // FILE NAME / CUSTOM NAME
         // =================================================
 
         TextView filename =
                 makeText(
-                        "🎬  " +
-                                item.fileName,
+                        "🎬  " + item.fileName,
                         20
                 );
 
@@ -1660,6 +1666,10 @@ public class MainActivity extends Activity {
         );
 
         filename.setMaxLines(2);
+
+        filename.setEllipsize(
+                android.text.TextUtils.TruncateAt.END
+        );
 
         container.addView(
                 filename,
@@ -1712,6 +1722,10 @@ public class MainActivity extends Activity {
 
         urlText.setMaxLines(1);
 
+        urlText.setEllipsize(
+                android.text.TextUtils.TruncateAt.MIDDLE
+        );
+
         LinearLayout.LayoutParams urlParams =
                 fullParams();
 
@@ -1742,38 +1756,7 @@ public class MainActivity extends Activity {
         );
 
         // =================================================
-        // PLAY FRESH
-        // =================================================
-
-        Button play =
-                makeButton(
-                        "▶ PLAY FRESH"
-                );
-
-        buttons.addView(
-                play,
-                buttonWeightParams()
-        );
-
-        play.setOnClickListener(
-                v -> {
-
-                    urlInput.setText(
-                            item.url
-                    );
-
-                    addHistory(
-                            item.url
-                    );
-
-                    openInJustPlayerFresh(
-                            item.url
-                    );
-                }
-        );
-
-        // =================================================
-        // CHOOSE PLAYER
+        // PLAYER
         // =================================================
 
         Button choose =
@@ -1804,21 +1787,24 @@ public class MainActivity extends Activity {
         );
 
         // =================================================
-        // COPY
+        // RENAME
         // =================================================
 
-        Button copy =
+        Button rename =
                 makeButton(
-                        "📋 COPY"
+                        "✏ RENAME"
                 );
 
         buttons.addView(
-                copy,
+                rename,
                 buttonWeightParams()
         );
 
-        copy.setOnClickListener(
-                v -> copyUrl(item.url)
+        rename.setOnClickListener(
+                v -> showRenameDialog(
+                        item,
+                        favouriteSection
+                )
         );
 
         // =================================================
@@ -1909,28 +1895,20 @@ public class MainActivity extends Activity {
         // TV REMOTE NAVIGATION
         // =================================================
 
-        play.setNextFocusRightId(
-                choose.getId()
-        );
-
-        choose.setNextFocusLeftId(
-                play.getId()
-        );
-
         choose.setNextFocusRightId(
-                copy.getId()
+                rename.getId()
         );
 
-        copy.setNextFocusLeftId(
+        rename.setNextFocusLeftId(
                 choose.getId()
         );
 
-        copy.setNextFocusRightId(
+        rename.setNextFocusRightId(
                 favourite.getId()
         );
 
         favourite.setNextFocusLeftId(
-                copy.getId()
+                rename.getId()
         );
 
         favourite.setNextFocusRightId(
@@ -1950,6 +1928,198 @@ public class MainActivity extends Activity {
         parent.addView(
                 container,
                 containerParams
+        );
+    }
+
+    // =====================================================
+    // RENAME
+    // =====================================================
+
+    private void showRenameDialog(
+            VideoItem item,
+            boolean favouriteSection
+    ) {
+
+        final EditText input =
+                new EditText(this);
+
+        input.setSingleLine(true);
+        input.setText(item.fileName);
+        input.setTextColor(WHITE);
+        input.setTextSize(18);
+
+        input.setSelectAllOnFocus(true);
+
+        input.setPadding(
+                dp(16),
+                dp(10),
+                dp(16),
+                dp(10)
+        );
+
+        input.setBackground(
+                createInputBackground()
+        );
+
+        LinearLayout wrapper =
+                new LinearLayout(this);
+
+        wrapper.setPadding(
+                dp(22),
+                dp(5),
+                dp(22),
+                dp(5)
+        );
+
+        wrapper.addView(
+                input,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(60)
+                )
+        );
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(this)
+                        .setTitle(
+                                "Rename Video"
+                        )
+                        .setMessage(
+                                "Enter a custom name for this video."
+                        )
+                        .setView(wrapper)
+                        .setNegativeButton(
+                                "CANCEL",
+                                null
+                        )
+                        .setPositiveButton(
+                                "SAVE",
+                                null
+                        )
+                        .create();
+
+        dialog.setOnShowListener(
+                d -> {
+
+                    Button save =
+                            dialog.getButton(
+                                    AlertDialog.BUTTON_POSITIVE
+                            );
+
+                    save.setOnClickListener(
+                            v -> {
+
+                                String newName =
+                                        input.getText()
+                                                .toString()
+                                                .trim();
+
+                                if (newName.isEmpty()) {
+
+                                    Toast.makeText(
+                                            this,
+                                            "Name cannot be empty",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                    return;
+                                }
+
+                                renameItem(
+                                        item.url,
+                                        newName
+                                );
+
+                                dialog.dismiss();
+                            }
+                    );
+
+                    input.requestFocus();
+
+                    input.postDelayed(
+                            () -> {
+
+                                InputMethodManager imm =
+                                        (InputMethodManager)
+                                                getSystemService(
+                                                        INPUT_METHOD_SERVICE
+                                                );
+
+                                if (imm != null) {
+
+                                    imm.showSoftInput(
+                                            input,
+                                            InputMethodManager.SHOW_IMPLICIT
+                                    );
+                                }
+
+                            },
+                            200
+                    );
+                }
+        );
+
+        dialog.show();
+    }
+
+    private void renameItem(
+            String url,
+            String newName
+    ) {
+
+        boolean changed = false;
+
+        List<VideoItem> history =
+                getItems(HISTORY);
+
+        for (VideoItem item :
+                history) {
+
+            if (item.url.equals(url)) {
+
+                item.fileName =
+                        newName;
+
+                changed = true;
+            }
+        }
+
+        if (changed) {
+
+            saveItems(
+                    HISTORY,
+                    history
+            );
+        }
+
+        List<VideoItem> favourites =
+                getItems(FAVOURITES);
+
+        for (VideoItem item :
+                favourites) {
+
+            if (item.url.equals(url)) {
+
+                item.fileName =
+                        newName;
+
+                changed = true;
+            }
+        }
+
+        if (changed) {
+
+            saveItems(
+                    FAVOURITES,
+                    favourites
+            );
+        }
+
+        refreshHistory();
+        refreshFavourites();
+
+        showMessage(
+                "✏ Name updated"
         );
     }
 
