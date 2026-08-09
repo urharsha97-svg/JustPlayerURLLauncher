@@ -18,7 +18,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -63,7 +62,6 @@ public class MainActivity extends Activity {
     private static final int WHITE = Color.rgb(245, 245, 245);
     private static final int GREY = Color.rgb(165, 165, 165);
 
-    /* STREAMLINK aesthetic colour */
     private static final int BLUE =
             Color.rgb(120, 210, 255);
 
@@ -363,11 +361,7 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_HORIZONTAL
         );
 
-        /*
-         * TOP BLACK SPACE REDUCED
-         * Old: 25dp
-         * New: 8dp
-         */
+        // TOP SPACE REDUCED
         root.setPadding(
                 dp(55),
                 dp(8),
@@ -380,75 +374,14 @@ public class MainActivity extends Activity {
         scrollView.addView(root);
 
         // =================================================
-        // PREMIUM CINEMATIC IMAGE HEADER
-        // =================================================
-
-        ImageView premiumHeaderImage =
-                new ImageView(this);
-
-        /*
-         * IMPORTANT:
-         * Image file must be:
-         *
-         * app/src/main/res/drawable/player_header.jpg
-         *
-         * Only lowercase letters are used here.
-         */
-        int headerImageId =
-                getResources().getIdentifier(
-                        "player_header",
-                        "drawable",
-                        getPackageName()
-                );
-
-        if (headerImageId != 0) {
-
-            premiumHeaderImage.setImageResource(
-                    headerImageId
-            );
-        }
-
-        premiumHeaderImage.setScaleType(
-                ImageView.ScaleType.CENTER_CROP
-        );
-
-        premiumHeaderImage.setAdjustViewBounds(true);
-
-        GradientDrawable imageBackground =
-                new GradientDrawable();
-
-        imageBackground.setColor(BLACK);
-        imageBackground.setCornerRadius(dp(18));
-
-        premiumHeaderImage.setBackground(
-                imageBackground
-        );
-
-        premiumHeaderImage.setClipToOutline(true);
-
-        LinearLayout.LayoutParams imageParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        dp(190)
-                );
-
-        imageParams.bottomMargin =
-                dp(22);
-
-        root.addView(
-                premiumHeaderImage,
-                imageParams
-        );
-
-        // =================================================
-        // STREAMLINK HEADER
+        // STREAM LINK HEADER
         // =================================================
 
         TextView brand =
                 new TextView(this);
 
         brand.setText(
-                "STREAMLINK"
+                "STREAM LINK"
         );
 
         brand.setTextSize(16);
