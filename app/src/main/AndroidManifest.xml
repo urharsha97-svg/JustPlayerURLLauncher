@@ -3,6 +3,8 @@
 
     <application
         android:label="Stream Link"
+        android:icon="@drawable/player_header"
+        android:roundIcon="@drawable/player_header"
         android:allowBackup="false"
         android:supportsRtl="true">
 
