@@ -62,7 +62,11 @@ public class MainActivity extends Activity {
 
     private static final int WHITE = Color.rgb(245, 245, 245);
     private static final int GREY = Color.rgb(165, 165, 165);
-    private static final int BLUE = Color.rgb(80, 160, 255);
+
+    /* STREAMLINK aesthetic colour */
+    private static final int BLUE =
+            Color.rgb(120, 210, 255);
+
     private static final int GOLD = Color.rgb(255, 193, 7);
 
     private static final int SORT_NEWEST = 0;
@@ -359,9 +363,14 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_HORIZONTAL
         );
 
+        /*
+         * TOP BLACK SPACE REDUCED
+         * Old: 25dp
+         * New: 8dp
+         */
         root.setPadding(
                 dp(55),
-                dp(25),
+                dp(8),
                 dp(55),
                 dp(50)
         );
@@ -377,13 +386,27 @@ public class MainActivity extends Activity {
         ImageView premiumHeaderImage =
                 new ImageView(this);
 
-        premiumHeaderImage.setImageResource(
+        /*
+         * IMPORTANT:
+         * Image file must be:
+         *
+         * app/src/main/res/drawable/player_header.jpg
+         *
+         * Only lowercase letters are used here.
+         */
+        int headerImageId =
                 getResources().getIdentifier(
-                        "IMG_20260809_025727",
+                        "player_header",
                         "drawable",
                         getPackageName()
-                )
-        );
+                );
+
+        if (headerImageId != 0) {
+
+            premiumHeaderImage.setImageResource(
+                    headerImageId
+            );
+        }
 
         premiumHeaderImage.setScaleType(
                 ImageView.ScaleType.CENTER_CROP
@@ -418,17 +441,25 @@ public class MainActivity extends Activity {
         );
 
         // =================================================
-        // PREMIUM HEADER
+        // STREAMLINK HEADER
         // =================================================
 
         TextView brand =
                 new TextView(this);
 
-        brand.setText("JUST PLAYER");
+        brand.setText(
+                "STREAMLINK"
+        );
 
-        brand.setTextSize(15);
-        brand.setTextColor(BLUE);
-        brand.setGravity(Gravity.CENTER);
+        brand.setTextSize(16);
+
+        brand.setTextColor(
+                BLUE
+        );
+
+        brand.setGravity(
+                Gravity.CENTER
+        );
 
         brand.setTypeface(
                 null,
@@ -460,7 +491,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams titleParams =
                 fullParams();
 
-        titleParams.topMargin = dp(3);
+        titleParams.topMargin =
+                dp(3);
 
         root.addView(
                 title,
@@ -483,7 +515,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams subtitleParams =
                 fullParams();
 
-        subtitleParams.bottomMargin = dp(25);
+        subtitleParams.bottomMargin =
+                dp(25);
 
         root.addView(
                 subtitle,
@@ -540,8 +573,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams justParams =
                 fullParams();
 
-        justParams.height = dp(68);
-        justParams.topMargin = dp(15);
+        justParams.height =
+                dp(68);
+
+        justParams.topMargin =
+                dp(15);
 
         root.addView(
                 justPlayer,
@@ -564,8 +600,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams chooseParams =
                 fullParams();
 
-        chooseParams.height = dp(68);
-        chooseParams.topMargin = dp(10);
+        chooseParams.height =
+                dp(68);
+
+        chooseParams.topMargin =
+                dp(10);
 
         root.addView(
                 choosePlayer,
@@ -588,8 +627,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams favouriteParams =
                 fullParams();
 
-        favouriteParams.height = dp(62);
-        favouriteParams.topMargin = dp(10);
+        favouriteParams.height =
+                dp(62);
+
+        favouriteParams.topMargin =
+                dp(10);
 
         root.addView(
                 addFavourite,
@@ -612,8 +654,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams favTitleParams =
                 fullParams();
 
-        favTitleParams.topMargin = dp(38);
-        favTitleParams.bottomMargin = dp(12);
+        favTitleParams.topMargin =
+                dp(38);
+
+        favTitleParams.bottomMargin =
+                dp(12);
 
         root.addView(
                 favTitle,
@@ -683,7 +728,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams favListParams =
                 fullParams();
 
-        favListParams.topMargin = dp(10);
+        favListParams.topMargin =
+                dp(10);
 
         root.addView(
                 favouritesLayout,
@@ -698,8 +744,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams clearFavParams =
                 fullParams();
 
-        clearFavParams.height = dp(58);
-        clearFavParams.topMargin = dp(12);
+        clearFavParams.height =
+                dp(58);
+
+        clearFavParams.topMargin =
+                dp(12);
 
         root.addView(
                 clearFav,
@@ -722,8 +771,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams historyTitleParams =
                 fullParams();
 
-        historyTitleParams.topMargin = dp(42);
-        historyTitleParams.bottomMargin = dp(12);
+        historyTitleParams.topMargin =
+                dp(42);
+
+        historyTitleParams.bottomMargin =
+                dp(12);
 
         root.addView(
                 historyTitle,
@@ -793,7 +845,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams historyListParams =
                 fullParams();
 
-        historyListParams.topMargin = dp(10);
+        historyListParams.topMargin =
+                dp(10);
 
         root.addView(
                 historyLayout,
@@ -808,8 +861,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams clearHistoryParams =
                 fullParams();
 
-        clearHistoryParams.height = dp(58);
-        clearHistoryParams.topMargin = dp(12);
+        clearHistoryParams.height =
+                dp(58);
+
+        clearHistoryParams.topMargin =
+                dp(12);
 
         root.addView(
                 clearHistory,
@@ -831,6 +887,7 @@ public class MainActivity extends Activity {
                 new EditText(this);
 
         search.setHint(hint);
+
         search.setHintTextColor(
                 Color.rgb(115, 115, 115)
         );
@@ -868,23 +925,52 @@ public class MainActivity extends Activity {
                 Gravity.CENTER_VERTICAL
         );
 
-        Button newest = makeButton("NEWEST");
-        Button oldest = makeButton("OLDEST");
-        Button az = makeButton("A-Z");
-        Button za = makeButton("Z-A");
+        Button newest =
+                makeButton("NEWEST");
 
-        bar.addView(newest, buttonWeightParams());
-        bar.addView(oldest, buttonWeightParams());
-        bar.addView(az, buttonWeightParams());
-        bar.addView(za, buttonWeightParams());
+        Button oldest =
+                makeButton("OLDEST");
+
+        Button az =
+                makeButton("A-Z");
+
+        Button za =
+                makeButton("Z-A");
+
+        bar.addView(
+                newest,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                oldest,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                az,
+                buttonWeightParams()
+        );
+
+        bar.addView(
+                za,
+                buttonWeightParams()
+        );
 
         newest.setOnClickListener(v -> {
 
             if (favourites) {
-                favouritesSort = SORT_NEWEST;
+
+                favouritesSort =
+                        SORT_NEWEST;
+
                 refreshFavourites();
+
             } else {
-                historySort = SORT_NEWEST;
+
+                historySort =
+                        SORT_NEWEST;
+
                 refreshHistory();
             }
         });
@@ -892,10 +978,17 @@ public class MainActivity extends Activity {
         oldest.setOnClickListener(v -> {
 
             if (favourites) {
-                favouritesSort = SORT_OLDEST;
+
+                favouritesSort =
+                        SORT_OLDEST;
+
                 refreshFavourites();
+
             } else {
-                historySort = SORT_OLDEST;
+
+                historySort =
+                        SORT_OLDEST;
+
                 refreshHistory();
             }
         });
@@ -903,10 +996,17 @@ public class MainActivity extends Activity {
         az.setOnClickListener(v -> {
 
             if (favourites) {
-                favouritesSort = SORT_AZ;
+
+                favouritesSort =
+                        SORT_AZ;
+
                 refreshFavourites();
+
             } else {
-                historySort = SORT_AZ;
+
+                historySort =
+                        SORT_AZ;
+
                 refreshHistory();
             }
         });
@@ -914,20 +1014,44 @@ public class MainActivity extends Activity {
         za.setOnClickListener(v -> {
 
             if (favourites) {
-                favouritesSort = SORT_ZA;
+
+                favouritesSort =
+                        SORT_ZA;
+
                 refreshFavourites();
+
             } else {
-                historySort = SORT_ZA;
+
+                historySort =
+                        SORT_ZA;
+
                 refreshHistory();
             }
         });
 
-        newest.setNextFocusRightId(oldest.getId());
-        oldest.setNextFocusLeftId(newest.getId());
-        oldest.setNextFocusRightId(az.getId());
-        az.setNextFocusLeftId(oldest.getId());
-        az.setNextFocusRightId(za.getId());
-        za.setNextFocusLeftId(az.getId());
+        newest.setNextFocusRightId(
+                oldest.getId()
+        );
+
+        oldest.setNextFocusLeftId(
+                newest.getId()
+        );
+
+        oldest.setNextFocusRightId(
+                az.getId()
+        );
+
+        az.setNextFocusLeftId(
+                oldest.getId()
+        );
+
+        az.setNextFocusRightId(
+                za.getId()
+        );
+
+        za.setNextFocusLeftId(
+                az.getId()
+        );
 
         return bar;
     }
@@ -942,10 +1066,15 @@ public class MainActivity extends Activity {
 
     private void playCurrentInJustPlayer() {
 
-        String url = getCurrentUrl();
+        String url =
+                getCurrentUrl();
 
         if (url.isEmpty()) {
-            showMessage("Please enter a video URL");
+
+            showMessage(
+                    "Please enter a video URL"
+            );
+
             return;
         }
 
@@ -955,10 +1084,15 @@ public class MainActivity extends Activity {
 
     private void choosePlayerForCurrentUrl() {
 
-        String url = getCurrentUrl();
+        String url =
+                getCurrentUrl();
 
         if (url.isEmpty()) {
-            showMessage("Please enter a video URL");
+
+            showMessage(
+                    "Please enter a video URL"
+            );
+
             return;
         }
 
@@ -968,22 +1102,31 @@ public class MainActivity extends Activity {
 
     private void addCurrentToFavourites() {
 
-        String url = getCurrentUrl();
+        String url =
+                getCurrentUrl();
 
         if (url.isEmpty()) {
-            showMessage("Enter a URL first");
+
+            showMessage(
+                    "Enter a URL first"
+            );
+
             return;
         }
 
         addFavourite(url);
     }
 
-    private void openInJustPlayerFresh(String url) {
+    private void openInJustPlayerFresh(
+            String url
+    ) {
 
         try {
 
             Intent intent =
-                    new Intent(Intent.ACTION_VIEW);
+                    new Intent(
+                            Intent.ACTION_VIEW
+                    );
 
             intent.setDataAndType(
                     Uri.parse(url),
@@ -1013,7 +1156,9 @@ public class MainActivity extends Activity {
             try {
 
                 Intent fallback =
-                        new Intent(Intent.ACTION_VIEW);
+                        new Intent(
+                                Intent.ACTION_VIEW
+                        );
 
                 fallback.setDataAndType(
                         Uri.parse(url),
@@ -1039,12 +1184,16 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void openPlayerChooserFresh(String url) {
+    private void openPlayerChooserFresh(
+            String url
+    ) {
 
         try {
 
             Intent videoIntent =
-                    new Intent(Intent.ACTION_VIEW);
+                    new Intent(
+                            Intent.ACTION_VIEW
+                    );
 
             videoIntent.setDataAndType(
                     Uri.parse(url),
@@ -1075,21 +1224,33 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void addHistory(String url) {
+    private void addHistory(
+            String url
+    ) {
 
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        removeUrl(history, url);
+        removeUrl(
+                history,
+                url
+        );
 
-        VideoItem item = createItem(url);
+        VideoItem item =
+                createItem(url);
 
         item.timestamp =
                 System.currentTimeMillis();
 
-        history.add(0, item);
+        history.add(
+                0,
+                item
+        );
 
-        saveItems(HISTORY, history);
+        saveItems(
+                HISTORY,
+                history
+        );
 
         refreshHistory();
     }
@@ -1119,9 +1280,15 @@ public class MainActivity extends Activity {
         }
 
         List<VideoItem> filtered =
-                filterItems(history, query);
+                filterItems(
+                        history,
+                        query
+                );
 
-        sortItems(filtered, historySort);
+        sortItems(
+                filtered,
+                historySort
+        );
 
         if (filtered.isEmpty()) {
 
@@ -1145,12 +1312,17 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void addFavourite(String url) {
+    private void addFavourite(
+            String url
+    ) {
 
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        if (containsUrl(favourites, url)) {
+        if (containsUrl(
+                favourites,
+                url
+        )) {
 
             showMessage(
                     "Already in favourites"
@@ -1159,12 +1331,16 @@ public class MainActivity extends Activity {
             return;
         }
 
-        VideoItem item = createItem(url);
+        VideoItem item =
+                createItem(url);
 
         item.timestamp =
                 System.currentTimeMillis();
 
-        favourites.add(0, item);
+        favourites.add(
+                0,
+                item
+        );
 
         saveItems(
                 FAVOURITES,
@@ -1178,12 +1354,17 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void removeFavourite(String url) {
+    private void removeFavourite(
+            String url
+    ) {
 
         List<VideoItem> favourites =
                 getItems(FAVOURITES);
 
-        removeUrl(favourites, url);
+        removeUrl(
+                favourites,
+                url
+        );
 
         saveItems(
                 FAVOURITES,
@@ -1265,6 +1446,7 @@ public class MainActivity extends Activity {
         if (query.isEmpty()) {
 
             result.addAll(source);
+
             return result;
         }
 
@@ -1442,7 +1624,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams dateParams =
                 fullParams();
 
-        dateParams.topMargin = dp(5);
+        dateParams.topMargin =
+                dp(5);
 
         container.addView(
                 date,
@@ -1472,8 +1655,11 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams urlParams =
                 fullParams();
 
-        urlParams.topMargin = dp(5);
-        urlParams.bottomMargin = dp(8);
+        urlParams.topMargin =
+                dp(5);
+
+        urlParams.bottomMargin =
+                dp(8);
 
         container.addView(
                 urlText,
@@ -1492,7 +1678,9 @@ public class MainActivity extends Activity {
         );
 
         Button choose =
-                makeButton("🎬 PLAYER");
+                makeButton(
+                        "🎬 PLAYER"
+                );
 
         buttons.addView(
                 choose,
@@ -1501,15 +1689,23 @@ public class MainActivity extends Activity {
 
         choose.setOnClickListener(v -> {
 
-            urlInput.setText(item.url);
+            urlInput.setText(
+                    item.url
+            );
 
-            addHistory(item.url);
+            addHistory(
+                    item.url
+            );
 
-            openPlayerChooserFresh(item.url);
+            openPlayerChooserFresh(
+                    item.url
+            );
         });
 
         Button rename =
-                makeButton("✏ RENAME");
+                makeButton(
+                        "✏ RENAME"
+                );
 
         buttons.addView(
                 rename,
@@ -1552,16 +1748,22 @@ public class MainActivity extends Activity {
 
             if (favouriteSection) {
 
-                removeFavourite(item.url);
+                removeFavourite(
+                        item.url
+                );
 
             } else {
 
-                addFavourite(item.url);
+                addFavourite(
+                        item.url
+                );
             }
         });
 
         Button delete =
-                makeButton("🗑");
+                makeButton(
+                        "🗑"
+                );
 
         buttons.addView(
                 delete,
@@ -1616,7 +1818,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams containerParams =
                 fullParams();
 
-        containerParams.bottomMargin = dp(14);
+        containerParams.bottomMargin =
+                dp(14);
 
         parent.addView(
                 container,
@@ -1669,7 +1872,9 @@ public class MainActivity extends Activity {
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle("Rename Video")
+                        .setTitle(
+                                "Rename Video"
+                        )
                         .setMessage(
                                 "Enter a custom name for this video."
                         )
@@ -1755,7 +1960,9 @@ public class MainActivity extends Activity {
 
             if (item.url.equals(url)) {
 
-                item.fileName = newName;
+                item.fileName =
+                        newName;
+
                 changed = true;
             }
         }
@@ -1775,7 +1982,9 @@ public class MainActivity extends Activity {
 
             if (item.url.equals(url)) {
 
-                item.fileName = newName;
+                item.fileName =
+                        newName;
+
                 changed = true;
             }
         }
@@ -1796,7 +2005,9 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void confirmDeleteHistory(String url) {
+    private void confirmDeleteHistory(
+            String url
+    ) {
 
         new AlertDialog.Builder(this)
                 .setTitle(
@@ -1817,7 +2028,9 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void confirmDeleteFavourite(String url) {
+    private void confirmDeleteFavourite(
+            String url
+    ) {
 
         new AlertDialog.Builder(this)
                 .setTitle(
@@ -1904,12 +2117,17 @@ public class MainActivity extends Activity {
                 .show();
     }
 
-    private void deleteHistory(String url) {
+    private void deleteHistory(
+            String url
+    ) {
 
         List<VideoItem> history =
                 getItems(HISTORY);
 
-        removeUrl(history, url);
+        removeUrl(
+                history,
+                url
+        );
 
         saveItems(
                 HISTORY,
@@ -1949,20 +2167,26 @@ public class MainActivity extends Activity {
         );
     }
 
-    private VideoItem createItem(String url) {
+    private VideoItem createItem(
+            String url
+    ) {
 
         VideoItem item =
                 new VideoItem();
 
         item.url = url;
-        item.fileName = getFileName(url);
+        item.fileName =
+                getFileName(url);
+
         item.timestamp =
                 System.currentTimeMillis();
 
         return item;
     }
 
-    private String getFileName(String url) {
+    private String getFileName(
+            String url
+    ) {
 
         try {
 
@@ -2012,7 +2236,9 @@ public class MainActivity extends Activity {
         return "Video";
     }
 
-    private String decode(String value) {
+    private String decode(
+            String value
+    ) {
 
         try {
 
@@ -2027,7 +2253,9 @@ public class MainActivity extends Activity {
         }
     }
 
-    private String formatDate(long timestamp) {
+    private String formatDate(
+            long timestamp
+    ) {
 
         SimpleDateFormat format =
                 new SimpleDateFormat(
@@ -2051,6 +2279,7 @@ public class MainActivity extends Activity {
         for (VideoItem item : items) {
 
             if (data.length() > 0) {
+
                 data.append("\n");
             }
 
@@ -2081,7 +2310,9 @@ public class MainActivity extends Activity {
                 .apply();
     }
 
-    private List<VideoItem> getItems(String key) {
+    private List<VideoItem> getItems(
+            String key
+    ) {
 
         String data =
                 prefs.getString(
@@ -2093,6 +2324,7 @@ public class MainActivity extends Activity {
                 new ArrayList<>();
 
         if (data.isEmpty()) {
+
             return result;
         }
 
@@ -2155,6 +2387,7 @@ public class MainActivity extends Activity {
         for (VideoItem item : items) {
 
             if (item.url.equals(url)) {
+
                 return true;
             }
         }
@@ -2200,7 +2433,8 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams params =
                 fullParams();
 
-        params.height = dp(70);
+        params.height =
+                dp(70);
 
         parent.addView(
                 empty,
@@ -2208,7 +2442,9 @@ public class MainActivity extends Activity {
         );
     }
 
-    private void showMessage(String message) {
+    private void showMessage(
+            String message
+    ) {
 
         Toast.makeText(
                 this,
