@@ -15,7 +15,8 @@ dependencyResolutionManagement {
     }
 }
 
-// Extract payload if present.
+// Extract only the Android modules from the payload ZIP.
+// Do NOT extract the payload's own root build/settings files.
 def payload = new File(settingsDir, "streamlink_payload.zip")
 def marker = new File(settingsDir, ".streamlink_payload_extracted")
 
@@ -25,32 +26,10 @@ if (payload.exists() && !marker.exists()) {
             def entry
 
             while ((entry = zis.nextEntry) != null) {
-                def output = new File(settingsDir, entry.name).canonicalFile
-                def root = settingsDir.canonicalFile
+                def entryName = entry.name.replace("\\", "/")
 
-                if (!output.path.startsWith(root.path + File.separator) &&
-                    output != root) {
-                    throw new GradleException(
-                        "Unsafe payload path: ${entry.name}"
-                    )
-                }
-
-                if (entry.isDirectory()) {
-                    output.mkdirs()
-                } else {
-                    output.parentFile.mkdirs()
-                    output.withOutputStream { os ->
-                        os << zis
-                    }
-                }
-            }
-        }
-    }
-
-    marker.text = "ok\n"
-}
-
-rootProject.name = "StreamLink"
-
-include(":tv")
-include(":sender")
+                // Only extract these folders.
+                if (!(entryName.startsWith("tv/") ||
+                      entryName.startsWith("sender/") ||
+                      entryName.startsWith("relay/"))) {
+                   
