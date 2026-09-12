@@ -15,21 +15,52 @@ dependencyResolutionManagement {
     }
 }
 
-// Extract only the Android modules from the payload ZIP.
-// Do NOT extract the payload's own root build/settings files.
 def payload = new File(settingsDir, "streamlink_payload.zip")
 def marker = new File(settingsDir, ".streamlink_payload_extracted")
 
 if (payload.exists() && !marker.exists()) {
     payload.withInputStream { input ->
-        new java.util.zip.ZipInputStream(input).withCloseable { zis ->
+        def zis = new java.util.zip.ZipInputStream(input)
+
+        try {
             def entry
 
             while ((entry = zis.nextEntry) != null) {
-                def entryName = entry.name.replace("\\", "/")
+                def entryName = entry.name.replace('\\', '/')
 
-                // Only extract these folders.
-                if (!(entryName.startsWith("tv/") ||
-                      entryName.startsWith("sender/") ||
-                      entryName.startsWith("relay/"))) {
-                   
+                if (entryName.startsWith('tv/') ||
+                    entryName.startsWith('sender/') ||
+                    entryName.startsWith('relay/')) {
+
+                    def output = new File(settingsDir, entryName).canonicalFile
+                    def root = settingsDir.canonicalFile
+
+                    if (!output.path.startsWith(root.path + File.separator)) {
+                        throw new GradleException(
+                            "Unsafe payload path: ${entryName}"
+                        )
+                    }
+
+                    if (entry.isDirectory()) {
+                        output.mkdirs()
+                    } else {
+                        output.parentFile.mkdirs()
+
+                        output.withOutputStream { os ->
+                            os << zis
+                        }
+                    }
+                }
+            }
+        } finally {
+            zis.close()
+        }
+    }
+
+    marker.text = "ok\n"
+}
+
+rootProject.name = "StreamLink"
+
+include(":tv")
+include(":sender")
