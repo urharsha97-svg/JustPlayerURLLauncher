@@ -8,15 +8,16 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
     repositories {
         google()
         mavenCentral()
     }
 }
 
-// Extract the project payload before Gradle loads the modules.
-def payload = new File(settingsDir, 'streamlink_payload.zip')
-def marker = new File(settingsDir, '.streamlink_payload_extracted')
+// Extract payload if present.
+def payload = new File(settingsDir, "streamlink_payload.zip")
+def marker = new File(settingsDir, ".streamlink_payload_extracted")
 
 if (payload.exists() && !marker.exists()) {
     payload.withInputStream { input ->
@@ -24,20 +25,21 @@ if (payload.exists() && !marker.exists()) {
             def entry
 
             while ((entry = zis.nextEntry) != null) {
-                def out = new File(settingsDir, entry.name).canonicalFile
+                def output = new File(settingsDir, entry.name).canonicalFile
                 def root = settingsDir.canonicalFile
 
-                if (!out.path.startsWith(root.path + File.separator) && out != root) {
+                if (!output.path.startsWith(root.path + File.separator) &&
+                    output != root) {
                     throw new GradleException(
                         "Unsafe payload path: ${entry.name}"
                     )
                 }
 
                 if (entry.isDirectory()) {
-                    out.mkdirs()
+                    output.mkdirs()
                 } else {
-                    out.parentFile.mkdirs()
-                    out.withOutputStream { os ->
+                    output.parentFile.mkdirs()
+                    output.withOutputStream { os ->
                         os << zis
                     }
                 }
@@ -45,9 +47,10 @@ if (payload.exists() && !marker.exists()) {
         }
     }
 
-    marker.text = 'ok\n'
+    marker.text = "ok\n"
 }
 
-rootProject.name = 'StreamLink'
+rootProject.name = "StreamLink"
 
-include ':tv', ':sender'
+include(":tv")
+include(":sender")
