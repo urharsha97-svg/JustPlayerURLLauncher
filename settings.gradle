@@ -1,3 +1,30 @@
+import java.util.zip.ZipInputStream
+
+// Phone-upload bootstrap: unpack the complete Stream Link project before Gradle loads modules.
+def payload = file('streamlink_payload.zip')
+def marker = file('.streamlink_payload_extracted')
+if (payload.exists() && !marker.exists()) {
+    payload.withInputStream { input ->
+        new ZipInputStream(input).withCloseable { zis ->
+            def entry
+            while ((entry = zis.nextEntry) != null) {
+                def out = file(entry.name).canonicalFile
+                def root = projectDir.canonicalFile
+                if (!out.path.startsWith(root.path + File.separator) && out != root) {
+                    throw new GradleException("Unsafe payload path: ${entry.name}")
+                }
+                if (entry.isDirectory()) {
+                    out.mkdirs()
+                } else {
+                    out.parentFile.mkdirs()
+                    out.withOutputStream { os -> os << zis }
+                }
+            }
+        }
+    }
+    marker.text = 'ok\n'
+}
+
 pluginManagement {
     repositories {
         google()
@@ -14,7 +41,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "StreamLink"
-
-include(":tv")
-include(":sender")
+rootProject.name = 'StreamLink'
+include ':tv', ':sender'
