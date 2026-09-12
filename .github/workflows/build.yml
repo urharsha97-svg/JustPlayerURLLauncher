@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -27,25 +27,41 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build TV receiver
-        run: gradle :tv:assembleDebug --no-daemon
+      - name: Make Gradle executable
+        run: chmod +x gradlew
 
-      - name: Build mobile sender
-        run: gradle :sender:assembleDebug --no-daemon
+      - name: Build TV app
+        run: ./gradlew :tv:assembleDebug --no-daemon
 
-      - name: Rename APKs
+      - name: Build Sender app
+        run: ./gradlew :sender:assembleDebug --no-daemon
+
+      - name: Find generated APKs
         run: |
-          cp tv/build/outputs/apk/debug/tv-debug.apk Stream-Link-TV.apk
-          cp sender/build/outputs/apk/debug/sender-debug.apk Stream-Link-Sender.apk
+          echo "TV APKs:"
+          find tv/build/outputs/apk -type f -name "*.apk" -print
+
+          echo "Sender APKs:"
+          find sender/build/outputs/apk -type f -name "*.apk" -print
+
+      - name: Prepare APK files
+        run: |
+          mkdir -p release
+
+          cp "$(find tv/build/outputs/apk -type f -name '*.apk' | head -n 1)" \
+             release/Stream-Link-TV.apk
+
+          cp "$(find sender/build/outputs/apk -type f -name '*.apk' | head -n 1)" \
+             release/Stream-Link-Sender.apk
 
       - name: Upload TV APK
         uses: actions/upload-artifact@v4
         with:
           name: Stream-Link-TV
-          path: Stream-Link-TV.apk
+          path: release/Stream-Link-TV.apk
 
       - name: Upload Sender APK
         uses: actions/upload-artifact@v4
         with:
           name: Stream-Link-Sender
-          path: Stream-Link-Sender.apk
+          path: release/Stream-Link-Sender.apk
