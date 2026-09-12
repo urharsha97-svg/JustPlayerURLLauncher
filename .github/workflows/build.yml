@@ -22,37 +22,44 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
-      - name: Make Gradle executable
-        run: chmod +x gradlew
-
       - name: Build TV app
-        run: ./gradlew :tv:assembleDebug --no-daemon
+        run: gradle :tv:assembleDebug --no-daemon
 
       - name: Build Sender app
-        run: ./gradlew :sender:assembleDebug --no-daemon
+        run: gradle :sender:assembleDebug --no-daemon
 
-      - name: Find generated APKs
+      - name: Find APKs
         run: |
-          echo "TV APKs:"
+          echo "TV APK:"
           find tv/build/outputs/apk -type f -name "*.apk" -print
 
-          echo "Sender APKs:"
+          echo "Sender APK:"
           find sender/build/outputs/apk -type f -name "*.apk" -print
 
-      - name: Prepare APK files
+      - name: Prepare release files
         run: |
           mkdir -p release
 
-          cp "$(find tv/build/outputs/apk -type f -name '*.apk' | head -n 1)" \
-             release/Stream-Link-TV.apk
+          TV_APK=$(find tv/build/outputs/apk -type f -name "*.apk" | head -n 1)
+          SENDER_APK=$(find sender/build/outputs/apk -type f -name "*.apk" | head -n 1)
 
-          cp "$(find sender/build/outputs/apk -type f -name '*.apk' | head -n 1)" \
-             release/Stream-Link-Sender.apk
+          if [ -z "$TV_APK" ]; then
+            echo "TV APK was not generated."
+            exit 1
+          fi
+
+          if [ -z "$SENDER_APK" ]; then
+            echo "Sender APK was not generated."
+            exit 1
+          fi
+
+          cp "$TV_APK" release/Stream-Link-TV.apk
+          cp "$SENDER_APK" release/Stream-Link-Sender.apk
 
       - name: Upload TV APK
         uses: actions/upload-artifact@v4
