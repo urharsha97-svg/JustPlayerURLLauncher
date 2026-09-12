@@ -3,47 +3,49 @@ name: Build Stream Link Apps
 on:
   workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
-      - name: Set up Gradle 8.7
+      - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
       - name: Build TV receiver
-        run: gradle :tv:assembleDebug --no-daemon --stacktrace
+        run: gradle :tv:assembleDebug --no-daemon
 
       - name: Build mobile sender
-        run: gradle :sender:assembleDebug --no-daemon --stacktrace
+        run: gradle :sender:assembleDebug --no-daemon
 
-      - name: Prepare APKs
+      - name: Rename APKs
         run: |
-          mkdir -p artifacts
-          cp tv/build/outputs/apk/debug/tv-debug.apk artifacts/Stream-Link-TV.apk
-          cp sender/build/outputs/apk/debug/sender-debug.apk artifacts/Stream-Link-Sender.apk
+          cp tv/build/outputs/apk/debug/tv-debug.apk Stream-Link-TV.apk
+          cp sender/build/outputs/apk/debug/sender-debug.apk Stream-Link-Sender.apk
 
       - name: Upload TV APK
         uses: actions/upload-artifact@v4
         with:
           name: Stream-Link-TV
-          path: artifacts/Stream-Link-TV.apk
+          path: Stream-Link-TV.apk
 
       - name: Upload Sender APK
         uses: actions/upload-artifact@v4
         with:
           name: Stream-Link-Sender
-          path: artifacts/Stream-Link-Sender.apk
+          path: Stream-Link-Sender.apk
