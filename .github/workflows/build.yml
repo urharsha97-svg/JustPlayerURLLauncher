@@ -1,65 +1,35 @@
-name: Build Stream Link Sender + TV
-
+name: Build Stream Link Apps
 on:
   workflow_dispatch:
   push:
     branches: [ main, master ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout current repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Set up Gradle 8.7
-        uses: gradle/actions/setup-gradle@v4
+          cache: gradle
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
-      - name: Prepare replacement project
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf "$RUNNER_TEMP/streamlink"
-          mkdir -p "$RUNNER_TEMP/streamlink"
-          unzip -q streamlink-source-bundle.zip -d "$RUNNER_TEMP/streamlink"
-          test -f "$RUNNER_TEMP/streamlink/settings.gradle"
-          test -d "$RUNNER_TEMP/streamlink/sender"
-          test -d "$RUNNER_TEMP/streamlink/tv"
-
-      - name: Build mobile sender APK
-        working-directory: ${{ runner.temp }}/streamlink
-        run: gradle :sender:assembleDebug --no-daemon
-
-      - name: Build TV receiver APK
-        working-directory: ${{ runner.temp }}/streamlink
+      - name: Build TV receiver
         run: gradle :tv:assembleDebug --no-daemon
-
+      - name: Build mobile sender
+        run: gradle :sender:assembleDebug --no-daemon
       - name: Rename APKs
-        shell: bash
         run: |
-          set -euo pipefail
-          cp "$RUNNER_TEMP/streamlink/sender/build/outputs/apk/debug/sender-debug.apk" Stream-Link-Sender.apk
-          cp "$RUNNER_TEMP/streamlink/tv/build/outputs/apk/debug/tv-debug.apk" Stream-Link-TV.apk
-
-      - name: Upload mobile sender
-        uses: actions/upload-artifact@v4
-        with:
-          name: Stream-Link-Sender
-          path: Stream-Link-Sender.apk
-          if-no-files-found: error
-
-      - name: Upload TV receiver
-        uses: actions/upload-artifact@v4
+          cp tv/build/outputs/apk/debug/tv-debug.apk Stream-Link-TV.apk
+          cp sender/build/outputs/apk/debug/sender-debug.apk Stream-Link-Sender.apk
+      - uses: actions/upload-artifact@v4
         with:
           name: Stream-Link-TV
           path: Stream-Link-TV.apk
-          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Stream-Link-Sender
+          path: Stream-Link-Sender.apk
           
