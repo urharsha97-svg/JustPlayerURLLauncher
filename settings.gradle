@@ -14,5 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "JustPlayerURLLauncher"
-include(":app")
+rootProject.name = "StreamLink"
+
+include(":tv")
+include(":sender")
