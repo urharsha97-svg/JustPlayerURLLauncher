@@ -14,5 +14,40 @@ dependencyResolutionManagement {
     }
 }
 
+// Extract the project payload before Gradle loads the modules.
+def payload = new File(settingsDir, 'streamlink_payload.zip')
+def marker = new File(settingsDir, '.streamlink_payload_extracted')
+
+if (payload.exists() && !marker.exists()) {
+    payload.withInputStream { input ->
+        new java.util.zip.ZipInputStream(input).withCloseable { zis ->
+            def entry
+
+            while ((entry = zis.nextEntry) != null) {
+                def out = new File(settingsDir, entry.name).canonicalFile
+                def root = settingsDir.canonicalFile
+
+                if (!out.path.startsWith(root.path + File.separator) && out != root) {
+                    throw new GradleException(
+                        "Unsafe payload path: ${entry.name}"
+                    )
+                }
+
+                if (entry.isDirectory()) {
+                    out.mkdirs()
+                } else {
+                    out.parentFile.mkdirs()
+                    out.withOutputStream { os ->
+                        os << zis
+                    }
+                }
+            }
+        }
+    }
+
+    marker.text = 'ok\n'
+}
+
 rootProject.name = 'StreamLink'
+
 include ':tv', ':sender'
