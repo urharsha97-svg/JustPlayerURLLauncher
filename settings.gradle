@@ -1,11 +1,25 @@
-import java.util.zip.ZipInputStream
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
 // Phone-upload bootstrap: unpack the complete Stream Link project before Gradle loads modules.
 def payload = file('streamlink_payload.zip')
 def marker = file('.streamlink_payload_extracted')
 if (payload.exists() && !marker.exists()) {
     payload.withInputStream { input ->
-        new ZipInputStream(input).withCloseable { zis ->
+        new java.util.zip.ZipInputStream(input).withCloseable { zis ->
             def entry
             while ((entry = zis.nextEntry) != null) {
                 def out = file(entry.name).canonicalFile
@@ -23,22 +37,6 @@ if (payload.exists() && !marker.exists()) {
         }
     }
     marker.text = 'ok\n'
-}
-
-pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
 }
 
 rootProject.name = 'StreamLink'
